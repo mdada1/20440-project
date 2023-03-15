@@ -21,4 +21,7 @@ pip install -r requirements.txt
 
 To create Table 1, navigate to the main project directory and run:
 
-1. Run "python .\src\data_processing\process_raw_data.py"
+1. "python .\src\data_processing\process_raw_data.py"
+2. "python .\src\visualization\generate_table1.py"
+
+The file "Table1.png" will be generated in the directory "figs/main_figs".

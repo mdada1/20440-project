@@ -78,4 +78,4 @@ python .\src\data_processing\process_raw_data.py
 python .\src\visualization\generate_table1.py
 ```
 
-The file "Table1.png" will be generated in the directory "figs/main_figs". This Table shows an overview of the patients the dataset was derived from.
+The file "Table1.png" will be generated in the directory "figs/main_figs". This table shows an overview of the patients the dataset was derived from.

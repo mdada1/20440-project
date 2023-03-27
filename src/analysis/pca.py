@@ -41,8 +41,13 @@ pca_df = pd.DataFrame(
 
 pca_df.head()
 
+path_to_save_figures = '..\\..\\fig\\supp_fig\\PCA\\' # for github
 
-
+try:
+    os.chdir(path_to_save_figures)
+except:
+    os.mkdir(path_to_save_figures)
+print(path_to_save_figures + "PCA_11components_explainedvariance")
 
 # plot explained variance of each PC
 variance = pca.explained_variance_ # list with the explained variance of each PC
@@ -51,6 +56,7 @@ plt.bar(range(1,len(variance)+1), variance)
 plt.xlabel('PCA Feature')
 plt.ylabel('Explained variance')
 plt.title('Feature Explained Variance')
+plt.savefig(path_to_save_figures + "PCA_11components_explainedvariance.png")
 plt.show()
 
 variance_pct = pca.explained_variance_ratio_ # list with the explained variance of each PC
@@ -59,8 +65,8 @@ plt.bar(range(1,len(variance_pct)+1), variance_pct*100)
 plt.xlabel('PCA Feature')
 plt.ylabel('Percent of variance explained')
 plt.title('Feature Explained Variance')
+plt.savefig(path_to_save_figures + "PCA_11components_explainedvariancepct.png")
 plt.show()
-
 
 
 
@@ -77,7 +83,8 @@ target_names = {
     'resolved':2
 }
 pca_df['target_numerical'] = pca_df['target'].map(target_names)
- 
+
+pca_df.to_pickle('..\\..\\data\\results\\pca_df_11components.pkl')
 
 
 # plot the first 2 PCs
@@ -91,8 +98,8 @@ sns.lmplot(
     legend=True
     )
 plt.title('2D PCA Graph')
+plt.savefig(path_to_save_figures + "PCA1_vs_PCA2_colorbyallergystatus")
 plt.show()
-
 
 # plot first 3 features
 plt.style.use('default')
@@ -103,5 +110,10 @@ plt.title(f'3D Scatter of RNAseq Data')
 ax.set_xlabel('PC1')
 ax.set_ylabel('PC2')
 ax.set_zlabel('PC3')
+plt.savefig(path_to_save_figures + "PCA1_vs_PCA2_vs_PCA3_colorbyallergystatus")
+plt.show()
+
+sns.pairplot(pca_df, hue='target')
+plt.savefig(path_to_save_figures + "all_PCA_comparisons_colorbyallergystatus")
 plt.show()
 

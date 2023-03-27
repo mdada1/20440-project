@@ -43,10 +43,10 @@ pca_df.head()
 
 path_to_save_figures = '..\\..\\fig\\supp_fig\\PCA\\' # for github
 
-try:
-    os.chdir(path_to_save_figures)
-except:
-    os.mkdir(path_to_save_figures)
+#try:
+#    os.chdir(path_to_save_figures)
+#except:
+#    os.mkdir(path_to_save_figures)
 print(path_to_save_figures + "PCA_11components_explainedvariance")
 
 # plot explained variance of each PC

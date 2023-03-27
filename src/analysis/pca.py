@@ -4,8 +4,10 @@ import sklearn.preprocessing
 from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 import seaborn as sns
+import os
 
 # read in RNA seq data
+#os.chdir("C:\\Users\\myrad\\20440-project")
 df = pd.read_pickle('..\\..\\data\\processed\\GSE114065_processed_RNAseq.pkl')
 annotation_df = pd.read_pickle('..\\..\\data\\processed\\GSE114065_series_matrix.pkl')
 

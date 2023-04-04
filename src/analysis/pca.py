@@ -12,7 +12,6 @@ df = pd.read_pickle('..\\..\\data\\processed\\GSE114065_processed_RNAseq.pkl')
 annotation_df = pd.read_pickle('..\\..\\data\\processed\\GSE114065_series_matrix.pkl')
 
 
-
 # prepare feature data
 df = df.drop('Gene', axis=1)
 X = df.to_numpy() 

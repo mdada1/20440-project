@@ -1,4 +1,4 @@
-# trying to do PCA following a tutorial first: https://www.jcchouinard.com/pca-with-python/
+# scratch - trying to do PCA following a tutorial first: https://www.jcchouinard.com/pca-with-python/
 import pandas as pd
 from sklearn import datasets
 import sklearn.preprocessing

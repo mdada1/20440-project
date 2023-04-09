@@ -1,0 +1,158 @@
+---
+title: "DEseq"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
+```{r}
+# Install packages and load libraries
+# install.packages("htmltools")
+# library(htmltools)
+
+# if (!require("BiocManager", quietly = TRUE))
+#     install.packages("BiocManager")
+# 
+# BiocManager::install("DESeq2")
+
+library( "DESeq2" )
+library(ggplot2)
+```
+```{r}
+# Read in raw counts matrix
+# library(readr)
+# df <- read_tsv("C:\Users\Amanda Chan\Documents\440 Project\Dataset\GSE114065_raw_counts_GRCh38.p13_NCBI.tsv.gz")
+
+# Unzips gz file and writes over with unzipped version
+R.utils::gunzip("/Users/Amanda Chan/Documents/440 Project/Dataset/GSE114065_raw_counts_GRCh38.p13_NCBI.tsv.gz")
+```
+```{r}
+countData <- read.table(file = '/Users/Amanda Chan/Documents/440 Project/Dataset/GSE114065_raw_counts_GRCh38.p13_NCBI.tsv', sep = '\t', header = TRUE)
+```
+
+
+```{r}
+head(countData)
+
+```
+```{r}
+# Unzip Human Gene Annotation Table gz file and write over with unzipped version
+R.utils::gunzip("/Users/Amanda Chan/Documents/440 Project/Dataset/Human.GRCh38.p13.annot.tsv.gz")
+```
+
+```{r}
+# Unzip metadata gz file and write over with unzipped version
+R.utils::gunzip("/Users/Amanda Chan/Documents/440 Project/Dataset/GSE114065_series_matrix.txt.gz")
+```
+
+
+```{r}
+
+metaData <- read.csv('/Users/Amanda Chan/Documents/440 Project/Dataset/GSE114065_series_matrix.csv', header = TRUE, sep = ",")
+
+metaData
+```
+```{r}
+# Select Sample_geo_accession (1), Sample_characteristics_ch1_allergy_status (13), and Sample_characteristics_ch1_activation_status (14) rows
+coldata <- metaData[c("1", "13", "14"),]
+coldata
+
+```
+
+```{r}
+coldata_transpose <- t(coldata)
+```
+
+```{r}
+# Remove rows 1 and 2
+coldata_transpose_2 <- coldata_transpose[-c(1, 2),]
+
+# Rename columns
+colnames(coldata_transpose_2) <- c("geo_accession","allergy_status","activation_status")
+```
+
+```{r}
+# Rename rows to GEO accession names
+rownames(coldata_transpose_2) <- coldata_transpose_2[,1]
+
+# Delete column 1 since GEO accession names are now row names
+coldata_transpose_2 <- coldata_transpose_2[,-1]
+```
+
+
+```{r}
+dds <- DESeqDataSetFromMatrix(countData=countData, 
+                              colData=coldata_transpose_2, 
+                              design=~allergy_status, tidy = TRUE)
+dds
+```
+
+```{r}
+dds <- DESeq(dds)
+```
+
+```{r}
+# Look at results table
+res <- results(dds)
+head(results(dds, tidy=TRUE))
+```
+```{r}
+# Summary of results
+summary(res) #summary of results
+
+```
+```{r}
+# Sort summary list by p-value
+res <- res[order(res$padj),]
+head(res)
+```
+```{r}
+# How many adjusted p-values are less than 0.1 (the default alpha)
+sum(res$padj < 0.1, na.rm=TRUE)
+
+```
+```{r}
+#we can use plotCounts fxn to compare the normalized counts
+#between treated and control groups for our top 6 genes
+par(mfrow=c(2,3))
+
+plotCounts(dds, gene="11043", intgroup="allergy_status")
+plotCounts(dds, gene="10643", intgroup="allergy_status")
+plotCounts(dds, gene="340542", intgroup="allergy_status")
+plotCounts(dds, gene="84144", intgroup="allergy_status")
+plotCounts(dds, gene="79783", intgroup="allergy_status")
+plotCounts(dds, gene="10402", intgroup="allergy_status")
+
+```
+Volcano Plot
+```{r}
+#reset par
+par(mfrow=c(1,1))
+# Make a basic volcano plot
+with(res, plot(log2FoldChange, -log10(pvalue), pch=20, main="Volcano plot", xlim=c(-3,3)))
+
+# Add colored points: blue if padj<0.01, red if log2FC>1 and padj<0.05)
+with(subset(res, padj<.01 ), points(log2FoldChange, -log10(pvalue), pch=20, col="blue"))
+with(subset(res, padj<.01 & abs(log2FoldChange)>2), points(log2FoldChange, -log10(pvalue), pch=20, col="red"))
+```
+
+PCA
+```{r}
+#First we need to transform the raw count data
+#vst function will perform variance stabilizing transformation
+
+vsdata <- vst(dds, blind=FALSE)
+```
+
+```{r}
+plotPCA(vsdata, intgroup="allergy_status") # use the DESEQ2 plotPCA fxn 
+
+```

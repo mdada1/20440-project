@@ -1,0 +1,12 @@
+{
+    "r.bracketedPaste": true,
+    "r.rterm.windows": "C:\\Users\\Amanda Chan\\AppData\\Local\\Packages\\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\\LocalCache\\local-packages\\Python311\\Scripts\\radian.exe",
+    "r.lsp.path": "C:\\Program Files\\R\\R-4.2.3\\bin\\R.exe",
+    "r.lsp.debug": true,
+    "r.lsp.diagnostics": true,
+    "r.rterm.option": [
+    "--no-save",
+    "--no-restore",
+    "--r-binary=C:\\Program Files\\R\\R-4.2.3\\bin\\R.exe"
+    ],
+}

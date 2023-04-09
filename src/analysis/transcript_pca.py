@@ -51,7 +51,7 @@ pca_df = pd.DataFrame(
 pca_df.head()
 
 path_to_save_figures = '..\\..\\fig\\supp_fig\\PCA\\our_analysis-transcriptPCA\\' # for github
-name_of_PCA_run = '8components80pct_allTcells' #_activatedonly'
+name_of_PCA_run = '8components80pct_allTcells_saveactivationstatus' #_activatedonly'
 
 
 print(path_to_save_figures + "PCA_" + name_of_PCA_run + "_explainedvariance")
@@ -81,8 +81,14 @@ plt.show()
 annotation_df_samples_to_keep = df.columns
 allergy_status_df = annotation_df.loc[annotation_df['Sample_title'] == 'Sample_characteristics_ch1_allergy_status']
 allergy_status_df = allergy_status_df.reindex(columns = annotation_df_samples_to_keep)
+
+# add activation status to the PCA dataframe
+annotation_df_samples_to_keep = df.columns
+activation_status_df = annotation_df.loc[annotation_df['Sample_title'] == 'Sample_characteristics_ch1_activation_status']
+activation_status_df = activation_status_df.reindex(columns = annotation_df_samples_to_keep)
  
 pca_df['allergy status'] = allergy_status_df.values[0] #check the order of the labels
+pca_df['activation status'] = activation_status_df.values[0] #check the order of the labels
 
 target_names = {
     'control':0,
@@ -100,7 +106,7 @@ sns.lmplot(
     x='PC1', 
     y='PC2', 
     data=pca_df, 
-    hue='allergy status', 
+    hue='activation status', 
     fit_reg=False, 
     legend=True
     )

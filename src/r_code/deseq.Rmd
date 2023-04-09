@@ -15,13 +15,13 @@ The preview shows you a rendered HTML copy of the contents of the editor. Conseq
 
 ```{r}
 # Install packages and load libraries
-# install.packages("htmltools")
-# library(htmltools)
+install.packages("htmltools")
+library(htmltools)
 
-# if (!require("BiocManager", quietly = TRUE))
-#     install.packages("BiocManager")
-# 
-# BiocManager::install("DESeq2")
+if (!require("BiocManager", quietly = TRUE))
+     install.packages("BiocManager")
+
+ BiocManager::install("DESeq2")
 
 library( "DESeq2" )
 library(ggplot2)
@@ -32,10 +32,13 @@ library(ggplot2)
 # df <- read_tsv("C:\Users\Amanda Chan\Documents\440 Project\Dataset\GSE114065_raw_counts_GRCh38.p13_NCBI.tsv.gz")
 
 # Unzips gz file and writes over with unzipped version
-R.utils::gunzip("/Users/Amanda Chan/Documents/440 Project/Dataset/GSE114065_raw_counts_GRCh38.p13_NCBI.tsv.gz")
+# R.utils::gunzip("/Users/Amanda Chan/Documents/440 Project/Dataset/GSE114065_raw_counts_GRCh38.p13_NCBI.tsv.gz")
 ```
 ```{r}
-countData <- read.table(file = '/Users/Amanda Chan/Documents/440 Project/Dataset/GSE114065_raw_counts_GRCh38.p13_NCBI.tsv', sep = '\t', header = TRUE)
+
+
+#countData <- read.table(file = '/Users/Amanda Chan/Documents/440 Project/Dataset/GSE114065_raw_counts_GRCh38.p13_NCBI.tsv', sep = '\t', header = TRUE)
+countData <- read.table(file = '..\\..\\data\\raw\\GSE114065_raw_counts_GRCh38.p13_NCBI.tsv', sep = '\t', header = TRUE) # file path: ..\\..\\ goes up two folders 
 ```
 
 
@@ -43,32 +46,37 @@ countData <- read.table(file = '/Users/Amanda Chan/Documents/440 Project/Dataset
 head(countData)
 
 ```
+
 ```{r}
 # Unzip Human Gene Annotation Table gz file and write over with unzipped version
-R.utils::gunzip("/Users/Amanda Chan/Documents/440 Project/Dataset/Human.GRCh38.p13.annot.tsv.gz")
+# R.utils::gunzip("/Users/Amanda Chan/Documents/440 Project/Dataset/Human.GRCh38.p13.annot.tsv.gz")
 ```
 
 ```{r}
 # Unzip metadata gz file and write over with unzipped version
-R.utils::gunzip("/Users/Amanda Chan/Documents/440 Project/Dataset/GSE114065_series_matrix.txt.gz")
+# R.utils::gunzip("/Users/Amanda Chan/Documents/440 Project/Dataset/GSE114065_series_matrix.txt.gz")
 ```
 
 
 ```{r}
 
-metaData <- read.csv('/Users/Amanda Chan/Documents/440 Project/Dataset/GSE114065_series_matrix.csv', header = TRUE, sep = ",")
+metaData <- read.csv('..\\..\\data\\raw\\GSE114065_series_matrix.csv', header = TRUE, sep = ",")
+
+# countData <- read.table(file = '..\\..\\data\\raw\\GSE114065_raw_counts_GRCh38.p13_NCBI.tsv', sep = '\t', header = TRUE) # file path: ..\\..\\ goes up two folders
 
 metaData
 ```
+
 ```{r}
-# Select Sample_geo_accession (1), Sample_characteristics_ch1_allergy_status (13), and Sample_characteristics_ch1_activation_status (14) rows
-coldata <- metaData[c("1", "13", "14"),]
+# Select Sample_geo_accession (1), Sample_characteristics_ch1_age_yrs (10), Sample_characteristics_ch1_allergy_status (13), and Sample_characteristics_ch1_activation_status (14) rows
+coldata <- metaData[c("1", "10", "13", "14"),]
 coldata
 
 ```
 
 ```{r}
 coldata_transpose <- t(coldata)
+
 ```
 
 ```{r}
@@ -76,7 +84,7 @@ coldata_transpose <- t(coldata)
 coldata_transpose_2 <- coldata_transpose[-c(1, 2),]
 
 # Rename columns
-colnames(coldata_transpose_2) <- c("geo_accession","allergy_status","activation_status")
+colnames(coldata_transpose_2) <- c("geo_accession", "age", "allergy_status","activation_status")
 ```
 
 ```{r}
@@ -84,13 +92,64 @@ colnames(coldata_transpose_2) <- c("geo_accession","allergy_status","activation_
 rownames(coldata_transpose_2) <- coldata_transpose_2[,1]
 
 # Delete column 1 since GEO accession names are now row names
-coldata_transpose_2 <- coldata_transpose_2[,-1]
+coldata_transpose_3 <- coldata_transpose_2[,-1]
+```
+
+
+PERSISTENT VS RESOLVED ALLERGY AT FOLLOW-UP TIMEPOINT
+```{r}
+
+# coldata_transpose_3
+
+# Load dplyr package
+library(dplyr)
+
+# Create new metadata table with only samples from the follow-up timepoint (age 2 or 4)
+follow_up_coldata <- filter(coldata_transpose_3, age == '2')
+```
+
+```{r}
+test_coldata_df <- data.frame(
+  age = as.vector(coldata_transpose_3[,1]),
+  allergy_status = as.vector(coldata_transpose_3[,2]),
+  activation_status = as.vector(coldata_transpose_3[,3]),
+  row.names = row.names(coldata_transpose_3)
+)
+
+test_coldata_df
+```
+
+```{r}
+# Create new metadata table with only samples from the follow-up timepoint (age 2 or 4)
+follow_up_coldata <- filter(test_coldata_df, age %in% c("2", "4"))
+# filter(df, state %in% c("CA", "NY",'DE'))
+
+# Of the follow-up timepoint data, separate into activated and unactivated
+follow_up_act_coldata <- filter(follow_up_coldata, activation_status == "1")
+
+
+# Get sample names of samples at the follow-up timepoint
+# sample_label_follow_up <- row.names(follow_up_coldata)
+sample_label_follow_up_act <- row.names(follow_up_act_coldata)
+
 ```
 
 
 ```{r}
-dds <- DESeqDataSetFromMatrix(countData=countData, 
-                              colData=coldata_transpose_2, 
+# Create new dataframe with only data samples from the follow-up timepoint (age 2 or 4)
+# follow_up_countData <- countData[,c("GeneID", sample_label_follow_up)]
+
+follow_up_act_countData <- countData[,c("GeneID", sample_label_follow_up_act)]
+
+
+
+```
+
+
+
+```{r}
+dds <- DESeqDataSetFromMatrix(countData=follow_up_act_countData, 
+                              colData=follow_up_act_coldata, 
                               design=~allergy_status, tidy = TRUE)
 dds
 ```
@@ -104,6 +163,7 @@ dds <- DESeq(dds)
 res <- results(dds)
 head(results(dds, tidy=TRUE))
 ```
+
 ```{r}
 # Summary of results
 summary(res) #summary of results
@@ -114,22 +174,29 @@ summary(res) #summary of results
 res <- res[order(res$padj),]
 head(res)
 ```
+
 ```{r}
 # How many adjusted p-values are less than 0.1 (the default alpha)
 sum(res$padj < 0.1, na.rm=TRUE)
 
 ```
 ```{r}
+# How many p-values are less than 0.05
+sum(res$pvalue < 0.05, na.rm=TRUE)
+
+```
+
+```{r}
 #we can use plotCounts fxn to compare the normalized counts
 #between treated and control groups for our top 6 genes
 par(mfrow=c(2,3))
 
-plotCounts(dds, gene="11043", intgroup="allergy_status")
-plotCounts(dds, gene="10643", intgroup="allergy_status")
-plotCounts(dds, gene="340542", intgroup="allergy_status")
-plotCounts(dds, gene="84144", intgroup="allergy_status")
-plotCounts(dds, gene="79783", intgroup="allergy_status")
-plotCounts(dds, gene="10402", intgroup="allergy_status")
+plotCounts(dds, gene="7476", intgroup="allergy_status")
+plotCounts(dds, gene="10235", intgroup="allergy_status")
+plotCounts(dds, gene="105374981", intgroup="allergy_status")
+plotCounts(dds, gene="348", intgroup="allergy_status")
+plotCounts(dds, gene="255928", intgroup="allergy_status")
+plotCounts(dds, gene="222545", intgroup="allergy_status")
 
 ```
 Volcano Plot

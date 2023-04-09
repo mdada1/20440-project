@@ -20,10 +20,10 @@ df = pd.read_pickle('..\\..\\data\\processed\\GSE114065_processed_RNAseq.pkl')
 annotation_df = pd.read_pickle('..\\..\\data\\processed\\GSE114065_series_matrix.pkl')
 
 df = filter_samples(df, annotation_df, 'Sample_characteristics_ch1_age_yrs', (2,4))
-df = filter_samples(df, annotation_df, 'Sample_characteristics_ch1_activation_status', 1)
+#df = filter_samples(df, annotation_df, 'Sample_characteristics_ch1_activation_status', 1)
 df
 
-display(annotation_df)
+#display(annotation_df)
 # prepare feature data
 df = df.drop('Gene', axis=1)
 X = df.to_numpy() 
@@ -51,7 +51,7 @@ pca_df = pd.DataFrame(
 pca_df.head()
 
 path_to_save_figures = '..\\..\\fig\\supp_fig\\PCA\\our_analysis-transcriptPCA\\' # for github
-name_of_PCA_run = '8components80pct_activatedonly'
+name_of_PCA_run = '8components80pct_allTcells' #_activatedonly'
 
 
 print(path_to_save_figures + "PCA_" + name_of_PCA_run + "_explainedvariance")

@@ -1,6 +1,6 @@
 # PCA analysis on all RNAseq data
 # filter to only include later time point (2/4 yrs)
-# also filter to only use activated cells? try both ways
+# also filter to only use activated cells- do both ways and pick result later
 
 import pandas as pd
 from sklearn import datasets
@@ -14,17 +14,20 @@ sys.path.append('..\\..\\src\\util\\')
 from helper_functions import filter_samples
 
 # read in RNA seq data
-#os.chdir("C:\\Users\\myrad\\20440-project")
+#os.chdir("C:\\Users\\myrad\\20440-project\\src\\analysis")
+
 df = pd.read_pickle('..\\..\\data\\processed\\GSE114065_processed_RNAseq.pkl')
 annotation_df = pd.read_pickle('..\\..\\data\\processed\\GSE114065_series_matrix.pkl')
 
 df = filter_samples(df, annotation_df, 'Sample_characteristics_ch1_age_yrs', (2,4))
+df = filter_samples(df, annotation_df, 'Sample_characteristics_ch1_activation_status', 1)
+df
 
 display(annotation_df)
 # prepare feature data
 df = df.drop('Gene', axis=1)
 X = df.to_numpy() 
-X = X.transpose() # X is an ndarray of just features (50 samples x 18864 genes)
+X = X.transpose() # X is an ndarray of just features (50 or 26 samples x 18864 genes)
 X.shape
 
 
@@ -48,12 +51,10 @@ pca_df = pd.DataFrame(
 pca_df.head()
 
 path_to_save_figures = '..\\..\\fig\\supp_fig\\PCA\\our_analysis-transcriptPCA\\' # for github
+name_of_PCA_run = '8components80pct_activatedonly'
 
-try:
-   os.chdir(path_to_save_figures)
-except:
-   os.mkdir(path_to_save_figures)
-print(path_to_save_figures + "PCA_8components80pct_allTcells_explainedvariance")
+
+print(path_to_save_figures + "PCA_" + name_of_PCA_run + "_explainedvariance")
 
 # plot explained variance of each PC
 variance = pca.explained_variance_ # list with the explained variance of each PC
@@ -62,7 +63,7 @@ plt.bar(range(1,len(variance)+1), variance)
 plt.xlabel('PCA Feature')
 plt.ylabel('Explained Variance')
 plt.title('Explained Variance of Top PCA Components')
-plt.savefig(path_to_save_figures + "PCA_8components80pct_allTcells_explainedvariance.png")
+plt.savefig(path_to_save_figures + "PCA_" + name_of_PCA_run + "_explainedvariance.png")
 plt.show()
 
 variance_pct = pca.explained_variance_ratio_ # list with the explained variance of each PC
@@ -71,7 +72,7 @@ plt.bar(range(1,len(variance_pct)+1), variance_pct*100)
 plt.xlabel('PCA Feature')
 plt.ylabel('Percent of Variance Explained')
 plt.title('Explained Variance of Top PCA Components')
-plt.savefig(path_to_save_figures + "PCA_8components80pct_allTcells_explainedvariancepct.png")
+plt.savefig(path_to_save_figures + "PCA_" + name_of_PCA_run + "_explainedvariancepct.png")
 plt.show()
 
 
@@ -90,7 +91,7 @@ target_names = {
 }
 pca_df['allergy_status_numerical'] = pca_df['allergy status'].map(target_names)
 
-pca_df.to_pickle('..\\..\\data\\results\\pca_df_8components80pct_allTcells.pkl')
+pca_df.to_pickle("..\\..\\data\\results\\pca_df_" + name_of_PCA_run + ".pkl")
 
 
 # plot the first 2 PCs
@@ -104,7 +105,7 @@ sns.lmplot(
     legend=True
     )
 #plt.title('2D PCA Graph')
-plt.savefig(path_to_save_figures + "8components80pct_allTcells-PCA1_vs_PCA2_colorbyallergystatus")
+plt.savefig(path_to_save_figures + name_of_PCA_run + "-PCA1_vs_PCA2_colorbyallergystatus")
 plt.show()
 
 # plot first 3 features
@@ -120,6 +121,6 @@ plt.show()
 # plt.show()
 
 sns.pairplot(pca_df, hue='allergy status')
-plt.savefig(path_to_save_figures + "8components80pct_allTcells-all_PCA_comparisons_colorbyallergystatus")
+plt.savefig(path_to_save_figures + name_of_PCA_run + "-all_PCA_comparisons_colorbyallergystatus")
 plt.show()
 

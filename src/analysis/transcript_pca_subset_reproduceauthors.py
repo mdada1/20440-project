@@ -1,8 +1,6 @@
 # PCA analysis on a subset of the RNAseq data
 # as of 4/5, are using the 4154 genes identified by the authors
 
-# LEFT OFF- COLOR 2D PCA GRAPH AND CHANGE TARGETS/CATEGORIES TO MATCH THE FIGURE THE AUTHORS HAVE
-# FIGURE OUT HOW TO SUBSET THE DATA TO JUST INCLUDE THE LATER TIME POINT??
 
 import pandas as pd
 from sklearn import datasets
@@ -28,10 +26,10 @@ gene_subset.head()
 
 # filter the RNAseq data
 df = df[df['Gene'].isin(gene_subset['transcript ID'])]
+#####
 
 df = filter_samples(df, annotation_df, 'Sample_characteristics_ch1_age_yrs', 1)
 
-#####
 display(annotation_df)
 
 # prepare feature data
@@ -39,10 +37,6 @@ df = df.drop('Gene', axis=1)
 X = df.to_numpy() 
 X = X.transpose() # X is an ndarray of just features (134 samples x 4154 genes)
 X.shape
-
-# filter out samples to just have certain timepoints? or only reducing the number of genes?
-# not sure what the labels are- how to separate original time point from the follow ups- just do PCA on the follow ups?
-
 
 
 # data scaling
@@ -93,7 +87,7 @@ plt.show()
 
 
 
-# add targets to the PCA dataframe
+# add allergy status to the PCA dataframe
 annotation_df_samples_to_keep = df.columns
 allergy_status_df = annotation_df.loc[annotation_df['Sample_title'] == 'Sample_characteristics_ch1_allergy_status']
 allergy_status_df = allergy_status_df.reindex(columns = annotation_df_samples_to_keep)
@@ -105,13 +99,12 @@ target_names = {
     'allergic':1, 
     'resolved':1
 }
-#pca_df['target_numerical'] = pca_df['target'].map(target_names)
+#pca_df['target_numerical'] = pca_df['allergy status'].map(target_names)
 
-
+# add a column for activation_status values to pca_df:
 annotation_df_samples_to_keep = df.columns
 activation_status_df = annotation_df.loc[annotation_df['Sample_title'] == 'Sample_characteristics_ch1_activation_status']
 activation_status_df = activation_status_df.reindex(columns = annotation_df_samples_to_keep)
-
 pca_df['activation status'] = activation_status_df.values[0] #check the order of the labels
 
 

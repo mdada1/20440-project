@@ -1,4 +1,6 @@
 # PCA analysis on all RNAseq data
+# filter to only include later time point (2/4 yrs)
+# also filter to only use activated cells? try both ways
 
 import pandas as pd
 from sklearn import datasets
@@ -7,22 +9,23 @@ from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os
+import sys
+sys.path.append('..\\..\\src\\util\\')
+from helper_functions import filter_samples
 
 # read in RNA seq data
 #os.chdir("C:\\Users\\myrad\\20440-project")
 df = pd.read_pickle('..\\..\\data\\processed\\GSE114065_processed_RNAseq.pkl')
 annotation_df = pd.read_pickle('..\\..\\data\\processed\\GSE114065_series_matrix.pkl')
 
+df = filter_samples(df, annotation_df, 'Sample_characteristics_ch1_age_yrs', (2,4))
 
+display(annotation_df)
 # prepare feature data
 df = df.drop('Gene', axis=1)
 X = df.to_numpy() 
-X = X.transpose() # X is an ndarray of just features (134 samples x 18864 genes)
+X = X.transpose() # X is an ndarray of just features (50 samples x 18864 genes)
 X.shape
-
-# filter out samples to just have certain timepoints? or only reducing the number of genes?
-# paper does PCA with 4154 genes and 558 methylation sites- filter first?
-
 
 
 # data scaling
@@ -44,50 +47,50 @@ pca_df = pd.DataFrame(
 
 pca_df.head()
 
-path_to_save_figures = '..\\..\\fig\\supp_fig\\PCA\\' # for github
+path_to_save_figures = '..\\..\\fig\\supp_fig\\PCA\\our_analysis-transcriptPCA\\' # for github
 
-#try:
-#    os.chdir(path_to_save_figures)
-#except:
-#    os.mkdir(path_to_save_figures)
-print(path_to_save_figures + "PCA_11components_explainedvariance")
+try:
+   os.chdir(path_to_save_figures)
+except:
+   os.mkdir(path_to_save_figures)
+print(path_to_save_figures + "PCA_8components80pct_allTcells_explainedvariance")
 
 # plot explained variance of each PC
 variance = pca.explained_variance_ # list with the explained variance of each PC
 #sns.set() # set seaborn theme for plotting
 plt.bar(range(1,len(variance)+1), variance)
 plt.xlabel('PCA Feature')
-plt.ylabel('Explained variance')
-plt.title('Feature Explained Variance')
-plt.savefig(path_to_save_figures + "PCA_11components_explainedvariance.png")
+plt.ylabel('Explained Variance')
+plt.title('Explained Variance of Top PCA Components')
+plt.savefig(path_to_save_figures + "PCA_8components80pct_allTcells_explainedvariance.png")
 plt.show()
 
 variance_pct = pca.explained_variance_ratio_ # list with the explained variance of each PC
 #sns.set() # set seaborn theme for plotting
 plt.bar(range(1,len(variance_pct)+1), variance_pct*100)
 plt.xlabel('PCA Feature')
-plt.ylabel('Percent of variance explained')
-plt.title('Feature Explained Variance')
-plt.savefig(path_to_save_figures + "PCA_11components_explainedvariancepct.png")
+plt.ylabel('Percent of Variance Explained')
+plt.title('Explained Variance of Top PCA Components')
+plt.savefig(path_to_save_figures + "PCA_8components80pct_allTcells_explainedvariancepct.png")
 plt.show()
 
 
 
-# add targets to the PCA dataframe
+# add allergy status to the PCA dataframe
 annotation_df_samples_to_keep = df.columns
 allergy_status_df = annotation_df.loc[annotation_df['Sample_title'] == 'Sample_characteristics_ch1_allergy_status']
 allergy_status_df = allergy_status_df.reindex(columns = annotation_df_samples_to_keep)
  
-pca_df['target'] = allergy_status_df.values[0] #check the order of the labels
+pca_df['allergy status'] = allergy_status_df.values[0] #check the order of the labels
 
 target_names = {
     'control':0,
     'allergic':1, 
     'resolved':2
 }
-pca_df['target_numerical'] = pca_df['target'].map(target_names)
+pca_df['allergy_status_numerical'] = pca_df['allergy status'].map(target_names)
 
-pca_df.to_pickle('..\\..\\data\\results\\pca_df_11components.pkl')
+pca_df.to_pickle('..\\..\\data\\results\\pca_df_8components80pct_allTcells.pkl')
 
 
 # plot the first 2 PCs
@@ -96,27 +99,27 @@ sns.lmplot(
     x='PC1', 
     y='PC2', 
     data=pca_df, 
-    hue='target', 
+    hue='allergy status', 
     fit_reg=False, 
     legend=True
     )
-plt.title('2D PCA Graph')
-plt.savefig(path_to_save_figures + "PCA1_vs_PCA2_colorbyallergystatus")
+#plt.title('2D PCA Graph')
+plt.savefig(path_to_save_figures + "8components80pct_allTcells-PCA1_vs_PCA2_colorbyallergystatus")
 plt.show()
 
 # plot first 3 features
-plt.style.use('default')
-fig = plt.figure()
-ax = plt.axes(projection='3d')
-ax.scatter3D(pca_df['PC1'], pca_df['PC2'], pca_df['PC3'], c=pca_df['target_numerical'], cmap='viridis')
-plt.title(f'3D Scatter of RNAseq Data')
-ax.set_xlabel('PC1')
-ax.set_ylabel('PC2')
-ax.set_zlabel('PC3')
-plt.savefig(path_to_save_figures + "PCA1_vs_PCA2_vs_PCA3_colorbyallergystatus")
-plt.show()
+# plt.style.use('default')
+# fig = plt.figure()
+# ax = plt.axes(projection='3d')
+# ax.scatter3D(pca_df['PC1'], pca_df['PC2'], pca_df['PC3'], c=pca_df['allergy_status_numerical'], cmap='viridis')
+# plt.title(f'3D Scatter of RNAseq Data')
+# ax.set_xlabel('PC1')
+# ax.set_ylabel('PC2')
+# ax.set_zlabel('PC3')
+# plt.savefig(path_to_save_figures + "PCA1_vs_PCA2_vs_PCA3_colorbyallergystatus")
+# plt.show()
 
-sns.pairplot(pca_df, hue='target')
-plt.savefig(path_to_save_figures + "all_PCA_comparisons_colorbyallergystatus")
+sns.pairplot(pca_df, hue='allergy status')
+plt.savefig(path_to_save_figures + "8components80pct_allTcells-all_PCA_comparisons_colorbyallergystatus")
 plt.show()
 

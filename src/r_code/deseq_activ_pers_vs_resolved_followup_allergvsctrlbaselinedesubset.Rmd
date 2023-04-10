@@ -1,5 +1,5 @@
 ---
-title: "Differential gene expression on activated samples of persistent vs resolved subjects at follow-up timepoint using genes identified as differentially expressed between activated samples of control and allergic subjects as baseline timepoint"
+title: "Differential gene expression analysis on activated samples of persistent vs resolved subjects at follow-up timepoint using genes identified as differentially expressed between activated samples of control and allergic subjects as baseline timepoint"
 output: html_notebook
 ---
 
@@ -176,7 +176,7 @@ dds <- DESeq(dds)
 
 ```{r}
 # Look at results table
-res <- results(dds)
+res <- results(dds, alpha=0.05)
 head(results(dds, tidy=TRUE))
 ```
 
@@ -193,8 +193,8 @@ head(res)
 ```
 
 ```{r}
-# How many adjusted p-values are less than 0.1 (the default alpha)
-sum(res$padj < 0.1, na.rm=TRUE)
+# How many adjusted p-values are less than 0.05 (the default alpha)
+sum(res$padj < 0.05, na.rm=TRUE)
 
 ```
 

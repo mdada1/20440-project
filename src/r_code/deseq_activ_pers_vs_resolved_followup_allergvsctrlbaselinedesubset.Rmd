@@ -205,6 +205,13 @@ sum(res$pvalue < 0.05, na.rm=TRUE)
 ```
 
 ```{r}
+# Save results to csv
+write.csv(as.data.frame(res), 
+         file="..\\..\\data\\results\\differential_gene_expression\\activ_pers_vs_resolved_followup_allergvsctrlbaselinedesubset.csv")
+```
+
+
+```{r}
 #we can use plotCounts fxn to compare the normalized counts
 #between treated and control groups for our top 6 genes
 par(mfrow=c(2,3))

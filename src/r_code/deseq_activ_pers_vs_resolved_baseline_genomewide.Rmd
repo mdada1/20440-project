@@ -195,6 +195,14 @@ sum(res$padj < 0.05, na.rm=TRUE)
 sum(res$pvalue < 0.05, na.rm=TRUE)
 
 ```
+```{r}
+# Save results to csv
+write.csv(as.data.frame(res), 
+         file="..\\..\\data\\results\\differential_gene_expression\\activ_pers_vs_resolved_baseline_genomewide.csv")
+
+
+```
+
 
 ```{r}
 #we can use plotCounts fxn to compare the normalized counts

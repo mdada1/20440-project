@@ -195,15 +195,15 @@ write.csv(as.data.frame(res),
 
 ```{r}
 #we can use plotCounts fxn to compare the normalized counts
-#between treated and control groups for our top 6 genes
+#between treated and control groups for the 4 differentially expressed genes
 par(mfrow=c(2,3))
 
 plotCounts(dds, gene="7476", intgroup="allergy_status")
 plotCounts(dds, gene="10235", intgroup="allergy_status")
 plotCounts(dds, gene="105374981", intgroup="allergy_status")
 plotCounts(dds, gene="348", intgroup="allergy_status")
-plotCounts(dds, gene="255928", intgroup="allergy_status")
-plotCounts(dds, gene="222545", intgroup="allergy_status")
+# plotCounts(dds, gene="255928", intgroup="allergy_status")
+# plotCounts(dds, gene="222545", intgroup="allergy_status")
 
 ```
 Volcano Plot
@@ -211,11 +211,11 @@ Volcano Plot
 #reset par
 par(mfrow=c(1,1))
 # Make a basic volcano plot
-with(res, plot(log2FoldChange, -log10(pvalue), pch=20, main="Volcano plot", xlim=c(-8,6)))
+with(res, plot(log2FoldChange, -log10(pvalue), pch=20, main="Volcano plot"))
 
-# Add colored points: blue if padj<0.01, red if log2FC>1 and padj<0.05)
-with(subset(res, padj<.01 ), points(log2FoldChange, -log10(pvalue), pch=20, col="blue"))
-with(subset(res, padj<.01 & abs(log2FoldChange)>2), points(log2FoldChange, -log10(pvalue), pch=20, col="red"))
+# Add colored points: blue if padj<0.05, red if log2FC>2 and padj<0.05)
+with(subset(res, padj<.05 ), points(log2FoldChange, -log10(pvalue), pch=20, col="blue"))
+with(subset(res, padj<.05 & abs(log2FoldChange)>2), points(log2FoldChange, -log10(pvalue), pch=20, col="red"))
 ```
 
 PCA

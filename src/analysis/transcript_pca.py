@@ -38,7 +38,7 @@ print(x_scaled)
 
 
 # run PCA
-pca = PCA(n_components=0.8) # n_components is the number of top components to keep, or if <1 is the percent of variance we want explained
+pca = PCA(n_components=0.9) # n_components is the number of top components to keep, or if <1 is the percent of variance we want explained
 pca_features = pca.fit_transform(x_scaled)
 print('Shape before PCA: ', x_scaled.shape)
 print('Shape after PCA: ', pca_features.shape)
@@ -113,6 +113,21 @@ sns.lmplot(
 #plt.title('2D PCA Graph')
 plt.savefig(path_to_save_figures + name_of_PCA_run + "-PCA1_vs_PCA2_colorbyallergystatus")
 plt.show()
+
+
+# same plot as above but with legend underneath
+sns.set()
+p = sns.lmplot(
+    x='PC1', 
+    y='PC2', 
+    data=pca_df, 
+    hue='allergy status', 
+    fit_reg=False, 
+)
+p.fig.legend(loc='lower center', ncol=2, title='Allergy Status', bbox_to_anchor=(0.475, -0.1))
+
+
+
 
 # plot first 3 features
 # plt.style.use('default')

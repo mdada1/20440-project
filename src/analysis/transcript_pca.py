@@ -20,7 +20,7 @@ df = pd.read_pickle('..\\..\\data\\processed\\GSE114065_processed_RNAseq.pkl')
 annotation_df = pd.read_pickle('..\\..\\data\\processed\\GSE114065_series_matrix.pkl')
 
 df = filter_samples(df, annotation_df, 'Sample_characteristics_ch1_age_yrs', (2,4))
-#df = filter_samples(df, annotation_df, 'Sample_characteristics_ch1_activation_status', 1)
+df = filter_samples(df, annotation_df, 'Sample_characteristics_ch1_activation_status', 1)
 df
 
 #display(annotation_df)
@@ -38,7 +38,7 @@ print(x_scaled)
 
 
 # run PCA
-pca = PCA(n_components=0.9) # n_components is the number of top components to keep, or if <1 is the percent of variance we want explained
+pca = PCA(n_components=0.99999999999999) # n_components is the number of top components to keep, or if <1 is the percent of variance we want explained
 pca_features = pca.fit_transform(x_scaled)
 print('Shape before PCA: ', x_scaled.shape)
 print('Shape after PCA: ', pca_features.shape)
@@ -51,7 +51,7 @@ pca_df = pd.DataFrame(
 pca_df.head()
 
 path_to_save_figures = '..\\..\\fig\\supp_fig\\PCA\\our_analysis-transcriptPCA\\' # for github
-name_of_PCA_run = '8components80pct_allTcells_saveactivationstatus' #_activatedonly'
+name_of_PCA_run = 'activatedonly_allcomponents_saveactstatus' #_activatedonly'
 
 
 print(path_to_save_figures + "PCA_" + name_of_PCA_run + "_explainedvariance")
@@ -144,4 +144,5 @@ p.fig.legend(loc='lower center', ncol=2, title='Allergy Status', bbox_to_anchor=
 sns.pairplot(pca_df, hue='allergy status')
 plt.savefig(path_to_save_figures + name_of_PCA_run + "-all_PCA_comparisons_colorbyallergystatus")
 plt.show()
+
 

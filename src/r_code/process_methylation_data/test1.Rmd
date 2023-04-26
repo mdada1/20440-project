@@ -1,0 +1,46 @@
+---
+title: "Process Methylation Data"
+output: html_notebook
+---
+
+```{r}
+#read.table("C:\\GSE114134_series_matrix.txt", sep=" ")
+
+library("data.table")
+fread("C:\\GSE114134_series_matrix.txt", data.table=FALSE, showProgress=TRUE, sep=" ")
+
+#if (!require("BiocManager", quietly = TRUE))
+#    install.packages("BiocManager")
+#BiocManager::install("minfi")
+
+```
+
+```{r}
+
+# Load the biomaRt package
+library(biomaRt)
+
+# Connect to the Ensembl database and select the appropriate dataset
+ensembl = useMart("ensembl", dataset = "hsapiens_gene_ensembl")
+
+# Define the transcript accession number
+transcript_id = "ENST00000384106.1"
+
+# Get the gene ID corresponding to the transcript
+transcript_to_gene = getBM(attributes = c("ensembl_transcript_id", "ensembl_gene_id"),
+                          filters = "ensembl_transcript_id",
+                          values = transcript_id,
+                          mart = ensembl)
+
+# Extract the gene ID from the output
+gene_id = transcript_to_gene$ensembl_gene_id[1]
+
+# Print the gene ID
+cat("The gene ID corresponding to transcript", transcript_id, "is", gene_id, "\n")
+
+
+
+
+```
+
+

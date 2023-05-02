@@ -1,0 +1,147 @@
+---
+title: "GSEA on activated samples of (future) persistent vs resolved subjects at baseline timepoint - allergy gene set"
+output: html_document
+date: "2023-04-30"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+
+
+CODE START
+
+```{r}
+library(tidyverse)
+```
+
+
+```{r}
+res <- read_csv("..\\..\\data\\results\\differential_gene_expression\\activ_pers_vs_resolved_baseline_genomewide.csv")
+res
+```
+
+
+```{r}
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("org.Hs.eg.db")
+```
+
+
+
+```{r}
+# Convert GeneID column values from numeric to character
+res$GeneID <- as.character(res$GeneID)
+```
+
+
+```{r}
+# Map Entrez gene IDs to gene symbols
+id_to_symbol <- AnnotationDbi::select(
+  org.Hs.eg.db, key=res$GeneID,
+  columns=c("SYMBOL","GENENAME"), keytype="ENTREZID"
+)
+id_to_symbol
+```
+```{r}
+# Join gene symbol with results table
+res_symb <- inner_join(res, id_to_symbol, by=c("GeneID"="ENTREZID"))
+res_symb
+```
+
+```{r}
+# Create table with just gene symbol and log2fold change to use for GSEA
+res_simp <- res_symb %>% 
+  dplyr::select(SYMBOL, log2FoldChange) %>% 
+  na.omit() %>% 
+  distinct() %>% 
+  group_by(SYMBOL) 
+  
+res_simp
+```
+
+Fast gsea package
+```{r}
+# Install fgsea package
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("fgsea")
+
+library(fgsea)
+```
+```{r}
+# Create named vector of gene-level statistics
+ranks <- deframe(res_simp)
+head(ranks, 20)
+```
+
+```{r}
+# Load the pathways into a named list
+pathways.allergy <- gmtPathways("..\\..\\gsea\\gene_sets\\HP_ALLERGY.v2023.1.Hs.gmt")
+
+# Look at them all if you want (uncomment)
+pathways.allergy
+
+# Show the first few pathways, and within those, show only the first few genes. 
+pathways.allergy %>% 
+  head() %>% 
+  lapply(head)
+```
+
+Run the fgsea algorithm with 1000 permutations
+```{r}
+fgseaRes <- fgsea(pathways=pathways.food_allergy, stats=ranks, nperm=1000)
+```
+
+```{r}
+fgseaResTidy <- fgseaRes %>%
+  as_tibble() %>%
+  arrange(desc(NES))
+
+# Show in a nice table:
+fgseaResTidy %>% 
+  dplyr::select(-leadingEdge, -ES, -nMoreExtreme) %>% 
+  arrange(padj) %>% 
+  DT::datatable()
+```
+
+```{r}
+ggplot(fgseaResTidy, aes(reorder(pathway, NES), NES)) +
+  geom_col(aes(fill=padj<0.05)) +
+  coord_flip() +
+  labs(x="Pathway", y="Normalized Enrichment Score",
+       title="Hallmark pathways NES from GSEA") + 
+  theme_minimal()
+
+```
+
+```{r}
+plotEnrichment(pathways.allergy[["HP_FOOD_ALLERGY"]],
+               ranks)
+```
+

@@ -21,97 +21,28 @@ df = pd.read_pickle('..\\..\\data\\processed\\GSE114065_processed_RNAseq.pkl')
 annotation_df = pd.read_pickle('..\\..\\data\\processed\\GSE114065_series_matrix.pkl')
 
 df = filter_samples(df, annotation_df, 'Sample_characteristics_ch1_age_yrs', (2,4))
-#df = filter_samples(df, annotation_df, 'Sample_characteristics_ch1_activation_status', 1)
+df = filter_samples(df, annotation_df, 'Sample_characteristics_ch1_activation_status', 1)
 df
 
-# get the top 1000 differentially expressed genes
+# add gene symbols to df
+conversion_table = pd.read_csv('..\\..\\data\\results\\differential_gene_expression\\biomart_geneid_lookuptable.csv', index_col=0)
+
+# get the top differentially expressed genes
 dge_df = pd.read_csv('..\\..\\data\\results\\differential_gene_expression\\activ_pers_vs_resolved_followup_genomewide_gene_symb.csv')
 mask = dge_df['SYMBOL'].notnull() # NOTE: there were 50 differentially expressed genes in the top 1000 that don't have gene IDs- ignoring those
-dge_df = dge_df[mask].head(1000)
+dge_df = dge_df[mask].head(3000)
 dge_df
 
-# convert ensembl IDs in df to gene symbols
-ens = df['Gene'].tolist() # list of ensembl IDs
-mg = mygene.MyGeneInfo()
-ginfo = mg.querymany(ens, scopes=['ensembl.gene', '_id'])
-gene_symbol_list = []
-for g in ginfo:
-    try:
-        gene_symbol_list.append(g['symbol'])
-    except:
-        gene_symbol_list.append('None')
-
-df.insert(loc=1, column='Gene Symbol', value=gene_symbol_list)
-df.head()
-
-# convert gene symbols in dge_df to ensembl IDs
-dge_df.insert(loc=1, column='Ens ID', value=dge_df['SYMBOL'])
-gene_symbols = dge_df['SYMBOL'].tolist() # list of symbols
-mg = mygene.MyGeneInfo()
-gene_info = mg.querymany(gene_symbols, scopes=['symbol','alias','name'], fields='ensembl.gene', species='human')
-
-# gene_id_list = []
-# for g in gene_info:
-#     if 'ensembl' in g:
-#         try:
-#             gene_id_list.append(g['ensembl']['gene'])
-#         except:
-#             # gene has multiple ensembl IDs
-#             multiple_ids = g['ensembl']
-#             print('problem gene', multiple_ids)
-            
-#     else:
-#         gene_id_list.append("None")
-
-dge_df
-
-def convert_symbol_to_ensembl(row):
-    symbol = row['Ens ID']
-    matches = [g for g in gene_info if 'ensembl' in g and g['query'] == symbol]
-    if len(matches) == 0:
-        return row
-    else:
-        rows = []
-        for match in matches:
-            if len(match['ensembl']) > 1:
-                for i in range(0, len(match['ensembl'])):
-                    new_row = row.copy()
-                    new_row['Ens ID'] = match['ensembl'][i]['gene']
-                    rows.append(new_row)
-            else:
-                new_row = row.copy()
-                new_row['Ens ID'] = match['ensembl']['gene']
-                rows.append(new_row)
-        return pd.concat(rows, axis=1).T
-
-
-dge_df = pd.concat([convert_symbol_to_ensembl(row) for _, row in dge_df.iterrows()], ignore_index=True)
-
+# convert gene symbols in dge_df to ensembl IDs and take the top 1000
+dge_df.insert(loc=1, column='external_gene_name', value=dge_df['SYMBOL'])
+conversion_table.drop_duplicates(subset='ensembl_gene_id', keep='first', inplace=True)
+merged_df = pd.merge(dge_df, conversion_table, on='external_gene_name')
+merged_df = merged_df.head(1919)
 
 
 # filter the RNAseq data to only include the top 1000 differentially expressed genes
-
-
-df = df[df['Gene'].isin(dge_df['Ens ID'])]
+df = df[df['Gene'].isin(merged_df['ensembl_gene_id'])]
 df
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -130,10 +61,12 @@ print(x_scaled)
 
 
 # run PCA
-pca = PCA(n_components=0.99999999999999) # n_components is the number of top components to keep, or if <1 is the percent of variance we want explained
+pca = PCA(n_components=0.9999999999) # n_components is the number of top components to keep, or if <1 is the percent of variance we want explained
 pca_features = pca.fit_transform(x_scaled)
 print('Shape before PCA: ', x_scaled.shape)
 print('Shape after PCA: ', pca_features.shape)
+# for top 1000 (really 1919), makes 49 PCs. takes 20 to explain 90% and 9 to explain 80%
+
  
 pca_df = pd.DataFrame(
     data=pca_features, 
@@ -142,8 +75,8 @@ pca_df = pd.DataFrame(
 
 pca_df.head()
 
-path_to_save_figures = '..\\..\\fig\\supp_fig\\PCA\\our_analysis-transcriptPCA\\' # for github
-name_of_PCA_run = 'activatedonly_allcomponents_saveactstatus' #_activatedonly'
+path_to_save_figures = '..\\..\\fig\\supp_fig\\PCA\\our_analysis-transcriptPCA\\top1000_dge_of1919\\' # for github
+name_of_PCA_run = 'activatedonly_top1919DGE_allcomponents' #_activatedonly'
 
 
 print(path_to_save_figures + "PCA_" + name_of_PCA_run + "_explainedvariance")
@@ -203,11 +136,11 @@ sns.lmplot(
     legend=True
     )
 #plt.title('2D PCA Graph')
-plt.savefig(path_to_save_figures + name_of_PCA_run + "-PCA1_vs_PCA2_colorbyallergystatus")
+plt.savefig(path_to_save_figures + name_of_PCA_run + "-PCA1_vs_PCA2_colorbyactivationstatus")
 plt.show()
 
 
-# same plot as above but with legend underneath
+# with legend underneath
 sns.set()
 p = sns.lmplot(
     x='PC1', 
@@ -217,7 +150,8 @@ p = sns.lmplot(
     fit_reg=False, 
 )
 p.fig.legend(loc='lower center', ncol=2, title='Allergy Status', bbox_to_anchor=(0.475, -0.1))
-
+plt.savefig(path_to_save_figures + name_of_PCA_run + "-PCA1_vs_PCA2_colorbyallergystatus_withlegend")
+plt.show()
 
 
 

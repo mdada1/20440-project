@@ -73,11 +73,21 @@ id_to_symbol <- AnnotationDbi::select(
 id_to_symbol
 ```
 
+
 ```{r}
 # Join gene symbol with results table
 res_symb <- inner_join(res, id_to_symbol, by=c("GeneID"="ENTREZID"))
 res_symb
 ```
+
+
+```{r}
+# Save results table with gene name to csv
+write.csv(as.data.frame(res_symb), 
+         file="..\\..\\data\\results\\differential_gene_expression\\activ_pers_vs_resolved_followup_genomewide_gene_symb.csv")
+
+```
+
 
 ```{r}
 # Create table with just gene symbol and log2fold change to use for GSEA

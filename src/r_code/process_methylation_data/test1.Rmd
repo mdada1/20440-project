@@ -7,7 +7,10 @@ output: html_notebook
 #read.table("C:\\GSE114134_series_matrix.txt", sep=" ")
 
 library("data.table")
-fread("C:\\GSE114134_series_matrix.txt", data.table=FALSE, showProgress=TRUE, sep=" ")
+setDTthreads(percent = 65)
+
+
+fread("C:\\GSE114134_series_matrix.txt", data.table=FALSE, showProgress=TRUE, sep="\t", fill=TRUE)
 
 #if (!require("BiocManager", quietly = TRUE))
 #    install.packages("BiocManager")

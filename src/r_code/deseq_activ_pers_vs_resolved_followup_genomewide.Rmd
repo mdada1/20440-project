@@ -25,6 +25,8 @@ library(htmltools)
 
 library( "DESeq2" )
 library(ggplot2)
+
+library(stringr) # added by Myra 5/3
 ```
 ```{r}
 # Read in raw counts matrix
@@ -229,4 +231,58 @@ vsdata <- vst(dds, blind=FALSE)
 ```{r}
 plotPCA(vsdata, intgroup="allergy_status") # use the DESEQ2 plotPCA fxn 
 
+```
+
+
+
+
+
+# added by Myra 5/3
+# https://bioinformatics-core-shared-training.github.io/cruk-summer-school-2018/RNASeq2018/html/05_Annotation_and_Visualisation.nb.html
+
+```{r}
+library(biomaRt)
+ensembltest = useMart("ENSEMBL_MART_ENSEMBL")
+listDatasets(ensembltest) %>% 
+    filter(str_detect(description, "Human"))
+ensembl = useDataset("hsapiens_gene_ensembl", mart=ensembltest)
+```
+
+```{r}
+
+res = read.csv("..\\..\\data\\results\\differential_gene_expression\\activ_pers_vs_resolved_followup_genomewide.csv", row.names=1)
+
+listFilters(ensembl) %>% 
+    filter(str_detect(name, "ensembl"))
+
+# Set the filter type and values
+filterType = "entrezgene_id"
+filterValues = rownames(res)
+print(filterType)
+# check the available "attributes" - things you can retreive
+listAttributes(ensembl) %>% 
+    head(100)
+
+#sink(file = "ensembl_db_attributes.txt")
+lapply(listAttributes(ensembl), write, "ensembl_db_attributes.txt", append=TRUE, ncolumns=1)
+```
+
+
+```{r}
+# Set the list of attributes
+attributeNames <- c('ensembl_gene_id', 'entrezgene_id', 'external_gene_name', 'ensembl_transcript_id') 
+# run the query
+annot <- getBM(attributes=attributeNames, 
+               filters = filterType, 
+               values = filterValues, 
+               mart = ensembl)
+
+head(annot)
+
+```
+
+```{r}
+# Save results to csv
+write.csv(as.data.frame(annot), 
+         file="..\\..\\data\\results\\differential_gene_expression\\biomart_geneid_lookuptable.csv")
 ```

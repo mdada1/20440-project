@@ -44,6 +44,7 @@ merged_df = merged_df.head(1919)
 df = df[df['Gene'].isin(merged_df['ensembl_gene_id'])]
 df
 
+#df.to_pickle('..\\..\\data\\results\\differential_gene_expression\\top1000from1919dge_followup.pkl')
 
 
 #display(annotation_df)

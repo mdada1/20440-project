@@ -175,28 +175,13 @@ for i in range(0, num_repeats):
     # plt.show()
 
 
-        # ### FEATURE IMPORTANCE
-        # # Create a series containing feature importances from the model and feature names from the training data
-        # feature_importances = pd.Series(estimator.feature_importances_, index=X_train.columns).sort_values(ascending=False)
-
-        # # Plot a simple bar chart
-        # feature_importances.head(100).plot.bar()
-        # plt.title('Top 100 Features')
-        # plt.show()
-
-        # feature_importances.head(30).plot.bar()
-        # plt.title('Top 30 Features')
-        # plt.show()
-
-        # feature_importances.head(10).plot.bar()
-        # plt.title('Top 10 Features')
-        # plt.show()
-
     estimators.extend(scores['estimator'])
     accuracies.extend(scores['test_accuracy'])
     precisions.extend(scores['test_precision'])
     recalls.extend(scores['test_recall'])
-   # OOBs.extend(
+
+
+
 
 print("Average Accuracy:", np.array(accuracies).mean())
 print("Average Precision:", np.array(precisions).mean())
@@ -241,4 +226,38 @@ ax.set(xlim=[-0.05, 1.05], ylim=[-0.05, 1.05],
 ax.set_xlabel('False Positive Rate')
 ax.set_ylabel('True Positive Rate')
 ax.legend(loc="lower right")
+plt.show()
+
+
+
+
+# get feature importances for each iteration/estimator
+### FEATURE IMPORTANCE
+importance_dfs = []
+for estimator in estimators:
+        
+    # Create a series containing feature importances from the model and feature names from the training data
+    feature_importances = pd.Series(estimator[1].feature_importances_, index=X_train.columns).sort_values(ascending=False)
+    importance_dfs.append(feature_importances)
+
+# convert the list of series to a DataFrame
+avg_importance_df = pd.concat(importance_dfs, axis=1, keys=range(len(importance_dfs)))
+
+# group the DataFrame by the gene index and calculate the mean of each group
+avg_importance_df = avg_importance_df.mean(axis=1)
+avg_importance_df = avg_importance_df.sort_values(ascending=False)
+
+pd.to_pickle(avg_importance_df, '..\\..\\data\\results\\avgfeatureimportance_RFallgenes_4folds10repeats.pkl')
+
+# Plot a simple bar chart
+avg_importance_df.head(100).plot.bar()
+plt.title('Top 100 Features')
+plt.show()
+
+avg_importance_df.head(30).plot.bar()
+plt.title('Top 30 Features')
+plt.show()
+
+avg_importance_df.head(10).plot.bar()
+plt.title('Top 10 Features')
 plt.show()

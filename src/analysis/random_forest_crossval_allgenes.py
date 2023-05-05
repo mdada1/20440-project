@@ -1,4 +1,5 @@
 # random forest classifier on original RNAseq data (all transcripts)
+# includes k-fold cross validation
 # https://www.datacamp.com/tutorial/random-forests-classifier-python
 
 import pandas as pd
@@ -10,6 +11,12 @@ from scipy.stats import randint
 from sklearn.tree import export_graphviz
 from IPython.display import Image
 import graphviz
+
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.pipeline import Pipeline
+from sklearn.impute import SimpleImputer
+from sklearn.model_selection import cross_val_score, cross_validate
+
 
 from sklearn import datasets
 import sklearn.preprocessing
@@ -99,41 +106,60 @@ print('Best hyperparameters:',  rand_search.best_params_)
 
 
 
-### SHOW RESULTS
-# Generate predictions with the best model
-y_pred = best_rf.predict(X_test)
-
-# Create the confusion matrix
-cm = confusion_matrix(y_test, y_pred)
-
-ConfusionMatrixDisplay(confusion_matrix=cm).plot()
-plt.show()
-
-accuracy = accuracy_score(y_test, y_pred)
-precision = precision_score(y_test, y_pred)
-recall = recall_score(y_test, y_pred)
-
-print("Accuracy:", accuracy)
-print("Precision:", precision)
-print("Recall:", recall)
-
-rf_disp = RocCurveDisplay.from_estimator(best_rf, X_test, y_test)
-plt.show()
+### REDO MODEL WITH BEST HYPERPARAMETERS- K FOLD CROSS VALIDATION
+# https://wandb.ai/wandb_fc/kaggle_tutorials/reports/Using-K-Fold-Cross-Validation-To-Improve-Your-Machine-Learning-Models--VmlldzoyMTY0MjM2#the-final-word
+my_pipeline = Pipeline(steps=[('preprocessor', SimpleImputer()),
+                              ('model', RandomForestClassifier(max_depth=rand_search.best_params_['max_depth'], 
+                                                               n_estimators=rand_search.best_params_['n_estimators']))
+                             ])
 
 
-### FEATURE IMPORTANCE
-# Create a series containing feature importances from the model and feature names from the training data
-feature_importances = pd.Series(best_rf.feature_importances_, index=X_train.columns).sort_values(ascending=False)
+# Multiply by since sklearn calculates *negative* MAE
+scores = cross_validate(my_pipeline, X, y,
+                              cv=4,
+                              scoring=['accuracy','precision','recall'],
+                              return_estimator=True)
 
-# Plot a simple bar chart
-feature_importances.head(100).plot.bar()
-plt.title('Top 100 Features')
-plt.show()
+print("Average Accuracy:", scores['test_accuracy'].mean())
+print("Average Precision:", scores['test_precision'].mean())
+print("Average Recall:", scores['test_recall'].mean())
 
-feature_importances.head(30).plot.bar()
-plt.title('Top 30 Features')
-plt.show()
 
-feature_importances.head(10).plot.bar()
-plt.title('Top 10 Features')
-plt.show()
+for estimator in scores['estimator']:
+    # Generate predictions with the best model
+    y_pred = estimator.predict(X_test)
+
+    # Create the confusion matrix
+    cm = confusion_matrix(y_test, y_pred)
+
+    ConfusionMatrixDisplay(confusion_matrix=cm).plot()
+    plt.show()
+
+    accuracy = accuracy_score(y_test, y_pred)
+    precision = precision_score(y_test, y_pred)
+    recall = recall_score(y_test, y_pred)
+
+    print("Accuracy:", accuracy)
+    print("Precision:", precision)
+    print("Recall:", recall)
+
+    rf_disp = RocCurveDisplay.from_estimator(estimator, X_test, y_test)
+    plt.show()
+
+
+    # ### FEATURE IMPORTANCE
+    # # Create a series containing feature importances from the model and feature names from the training data
+    # feature_importances = pd.Series(estimator.feature_importances_, index=X_train.columns).sort_values(ascending=False)
+
+    # # Plot a simple bar chart
+    # feature_importances.head(100).plot.bar()
+    # plt.title('Top 100 Features')
+    # plt.show()
+
+    # feature_importances.head(30).plot.bar()
+    # plt.title('Top 30 Features')
+    # plt.show()
+
+    # feature_importances.head(10).plot.bar()
+    # plt.title('Top 10 Features')
+    # plt.show()

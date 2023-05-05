@@ -1,0 +1,168 @@
+---
+title: "methylation"
+output: html_document
+date: "2023-05-03"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+
+CODE START
+```{r}
+# Install packages
+if (!require("BiocManager", quietly = TRUE))
+   install.packages("BiocManager")
+BiocManager::install("minfi")
+```
+
+
+
+```{r}
+# load packages required for analysis
+library(knitr)
+library(limma)
+library(minfi)
+# library(IlluminaHumanMethylation450kanno.ilmn12.hg19)
+# library(IlluminaHumanMethylation450kmanifest)
+
+# library(RColorBrewer)
+# library(missMethyl)
+# library(minfiData)
+# library(Gviz)
+# library(DMRcate)
+# library(stringr)
+```
+```{r}
+meth_data <- read.table(file = 'C:\\Users\\Amanda Chan\\Documents\\440 Project\\Dataset\\Methylation\\GSE114134_series_matrix.txt', sep = "", skip = 65, nrows = 100000) # file path: ..\\..\\ goes up two folders
+# skip the first 65 rows
+# update to read in all rows in chunks!!
+
+meth_data
+
+# library("data.table")
+# fread("C:\\Users\\Amanda Chan\\Documents\\440 Project\\Dataset\\Methylation\\GSE114134_series_matrix.txt", data.table=FALSE, showProgress=TRUE, sep=" ")
+
+```
+
+```{r}
+meth_data_format <- meth_data
+
+colnames(meth_data_format) <- meth_data[1, ] # make sample names the column names
+rownames(meth_data_format) <- meth_data[, 1] # make probe ID the row names
+
+meth_data_format <- meth_data_format[-1, ] # delete first row
+meth_data_format <- meth_data_format[, -1] # delete first column
+
+meth_data_format
+```
+```{r}
+# Save this chunk methylation data to csv: probes 1-100,000
+write.csv(as.data.frame(meth_data_format), 
+         file="..\\..\\data\\processed\\methylation\\methylation_data_1.csv")
+```
+
+```{r}
+# Read in sample IDs and allergy status
+sample_id <- read.table(file = 'C:\\Users\\Amanda Chan\\Documents\\440 Project\\Dataset\\Methylation\\GSE114134_series_matrix.txt', sep = "", skip = 28, nrows = 1)
+sample_id <- t(sample_id)
+# sample_id <- sample_id[-1, ] # remove first row
+
+sample_labels <- read.table(file = 'C:\\Users\\Amanda Chan\\Documents\\440 Project\\Dataset\\Methylation\\GSE114134_series_matrix.txt', sep = "", skip = 36, nrows = 2)
+sample_labels <- t(sample_labels)
+
+
+sample_act_status <- read.table(file = 'C:\\Users\\Amanda Chan\\Documents\\440 Project\\Dataset\\Methylation\\GSE114134_series_matrix.txt', sep = "", skip = 40, nrows = 1)
+sample_act_status <- t(sample_act_status)
+
+```
+
+```{r}
+
+sample_info_df <- data.frame(
+  age = as.vector(sample_labels[,2]),
+  allergy_status = as.vector(sample_labels[,1]),
+  activation_status = as.vector(sample_act_status[,1]),
+  row.names = sample_id[,1]
+)
+
+sample_info_df <- sample_info_df[-1, ] # remove first row
+
+# sample_info_df <- rbind(
+#   sample_id,
+#   sample_labels,
+#   sample_allerg_status
+# )
+# sample_info_df <- sample_info_df[,-1] # remove unneeded column
+# 
+# sample_info_df <- t(sample_info_df)
+# 
+# rownames(sample_info_df) <- sample_info_df[, 1] # make sample IDs the row names
+# sample_info_df <- sample_info_df[, -1] # delete first column
+# 
+# colnames(sample_info_df) <- c("allergy phenotype", "age", "stimulation")
+
+```
+
+
+```{r}
+library(dplyr)
+
+# Create new metadata table with only samples from the baseline timepoint (age 1)
+baseline_samples <- filter(sample_info_df, age == 'age: 1')
+baseline_samples
+
+# Of the baseline timepoint data, take the activated datapoints
+baseline_samples_act <- filter(baseline_samples, activation_status == "stimulation: 1")
+baseline_samples_act
+
+# Separate into transient and persistent allergics
+baseline_samples_act_trans <- filter(baseline_samples_act, allergy_status == "allergy_phenotype: transient")
+baseline_samples_act_pers <- filter(baseline_samples_act, allergy_status == "allergy_phenotype: persistent")
+```
+
+```{r}
+# Get sample names 
+label_baseline_samples_act_trans <- row.names(baseline_samples_act_trans)
+label_baseline_samples_act_pers <- row.names(baseline_samples_act_pers)
+label_baseline_samples_act_trans
+label_baseline_samples_act_pers
+
+# Create new dataframe with only data samples from the activated allergic samples at baseline timepoint 
+# follow_up_countData <- countData[,c("GeneID", sample_label_follow_up)]
+
+baseline_act_trans_meth_data <- meth_data_format[, (label_baseline_samples_act_trans)]
+baseline_act_pers_meth_data <- meth_data_format[, (label_baseline_samples_act_pers)]
+
+baseline_act_meth_data <- cbind(baseline_act_trans_meth_data, baseline_act_pers_meth_data)
+```
+
+```{r}
+# M values??
+
+dmp <- dmpFinder(baseline_act_meth_data, pheno=, type="categorical")
+
+```
+

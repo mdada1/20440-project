@@ -16,7 +16,9 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.pipeline import Pipeline
 from sklearn.impute import SimpleImputer
 from sklearn.model_selection import cross_val_score, cross_validate
-
+from sklearn.metrics import auc
+from sklearn.metrics import plot_roc_curve
+from sklearn.model_selection import StratifiedKFold
 
 from sklearn import datasets
 import sklearn.preprocessing
@@ -68,7 +70,9 @@ df
 
 ### SPLIT INTO TRAINING AND TEST DATA (REPLACE WITH KFOLD CROSS VAL)
 X = df.drop('allergy_status_numerical', axis=1)
+#X = X.to_numpy()
 y = df['allergy_status_numerical']
+#y = y.to_numpy()
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 
 
@@ -78,7 +82,7 @@ rf = RandomForestClassifier()
 rf.fit(X_train, y_train)
 y_pred = rf.predict(X_test)
 accuracy = accuracy_score(y_test, y_pred)
-print("Accuracy:", accuracy)
+#print("Accuracy:", accuracy)
 
 
 
@@ -107,59 +111,134 @@ print('Best hyperparameters:',  rand_search.best_params_)
 
 
 ### REDO MODEL WITH BEST HYPERPARAMETERS- K FOLD CROSS VALIDATION
-# https://wandb.ai/wandb_fc/kaggle_tutorials/reports/Using-K-Fold-Cross-Validation-To-Improve-Your-Machine-Learning-Models--VmlldzoyMTY0MjM2#the-final-word
-my_pipeline = Pipeline(steps=[('preprocessor', SimpleImputer()),
-                              ('model', RandomForestClassifier(max_depth=rand_search.best_params_['max_depth'], 
-                                                               n_estimators=rand_search.best_params_['n_estimators']))
-                             ])
 
 
-# Multiply by since sklearn calculates *negative* MAE
-scores = cross_validate(my_pipeline, X, y,
-                              cv=4,
-                              scoring=['accuracy','precision','recall'],
-                              return_estimator=True)
+# # Run classifier with cross-validation and plot ROC curves
+# cv = StratifiedKFold(n_splits=4)
 
-print("Average Accuracy:", scores['test_accuracy'].mean())
-print("Average Precision:", scores['test_precision'].mean())
-print("Average Recall:", scores['test_recall'].mean())
+# classifier = RandomForestClassifier(max_depth=rand_search.best_params_['max_depth'], 
+#                                     n_estimators=rand_search.best_params_['n_estimators'])
 
 
-for estimator in scores['estimator']:
-    # Generate predictions with the best model
-    y_pred = estimator.predict(X_test)
-
-    # Create the confusion matrix
-    cm = confusion_matrix(y_test, y_pred)
-
-    ConfusionMatrixDisplay(confusion_matrix=cm).plot()
-    plt.show()
-
-    accuracy = accuracy_score(y_test, y_pred)
-    precision = precision_score(y_test, y_pred)
-    recall = recall_score(y_test, y_pred)
-
-    print("Accuracy:", accuracy)
-    print("Precision:", precision)
-    print("Recall:", recall)
-
-    rf_disp = RocCurveDisplay.from_estimator(estimator, X_test, y_test)
-    plt.show()
 
 
-    # ### FEATURE IMPORTANCE
-    # # Create a series containing feature importances from the model and feature names from the training data
-    # feature_importances = pd.Series(estimator.feature_importances_, index=X_train.columns).sort_values(ascending=False)
 
-    # # Plot a simple bar chart
-    # feature_importances.head(100).plot.bar()
-    # plt.title('Top 100 Features')
+num_repeats = 10
+num_folds = 4
+
+estimators = []
+accuracies = []
+precisions = []
+recalls = []
+#OOBs = []
+
+for i in range(0, num_repeats):
+
+
+    # https://wandb.ai/wandb_fc/kaggle_tutorials/reports/Using-K-Fold-Cross-Validation-To-Improve-Your-Machine-Learning-Models--VmlldzoyMTY0MjM2#the-final-word
+    my_pipeline = Pipeline(steps=[('preprocessor', SimpleImputer()),
+                                ('model', RandomForestClassifier(max_depth=rand_search.best_params_['max_depth'], 
+                                                                n_estimators=rand_search.best_params_['n_estimators']
+                                                                ))
+                                ])
+
+
+    scores = cross_validate(my_pipeline, X, y,
+                                cv=num_folds,
+                                scoring=['accuracy','precision','recall'],
+                                return_estimator=True)
+
+    # print("Average Accuracy:", scores['test_accuracy'].mean())
+    # print("Average Precision:", scores['test_precision'].mean())
+    # print("Average Recall:", scores['test_recall'].mean())
+
+    for estimator in scores['estimator']:
+        # Generate predictions with the best model
+        y_pred = estimator.predict(X_test)
+        #estimator.oob_score_
+
+        # Create the confusion matrix
+        cm = confusion_matrix(y_test, y_pred)
+
+        #ConfusionMatrixDisplay(confusion_matrix=cm).plot()
+        #plt.show()
+
+        accuracy = accuracy_score(y_test, y_pred)
+        precision = precision_score(y_test, y_pred)
+        recall = recall_score(y_test, y_pred)
+
+        # print("Accuracy:", accuracy)
+        # print("Precision:", precision)
+        # print("Recall:", recall)
+
+        #rf_disp = RocCurveDisplay.from_estimator(estimator, X_test, y_test)
     # plt.show()
 
-    # feature_importances.head(30).plot.bar()
-    # plt.title('Top 30 Features')
-    # plt.show()
 
-    # feature_importances.head(10).plot.bar()
-    # plt.title('Top 10 Features')
-    # plt.show()
+        # ### FEATURE IMPORTANCE
+        # # Create a series containing feature importances from the model and feature names from the training data
+        # feature_importances = pd.Series(estimator.feature_importances_, index=X_train.columns).sort_values(ascending=False)
+
+        # # Plot a simple bar chart
+        # feature_importances.head(100).plot.bar()
+        # plt.title('Top 100 Features')
+        # plt.show()
+
+        # feature_importances.head(30).plot.bar()
+        # plt.title('Top 30 Features')
+        # plt.show()
+
+        # feature_importances.head(10).plot.bar()
+        # plt.title('Top 10 Features')
+        # plt.show()
+
+    estimators.extend(scores['estimator'])
+    accuracies.extend(scores['test_accuracy'])
+    precisions.extend(scores['test_precision'])
+    recalls.extend(scores['test_recall'])
+   # OOBs.extend(
+
+print("Average Accuracy:", np.array(accuracies).mean())
+print("Average Precision:", np.array(precisions).mean())
+print("Average Recall:", np.array(recalls).mean())
+
+
+sns.set_theme(style='white')
+
+tprs = []
+aucs = []
+mean_fpr = np.linspace(0, 1, 100)
+
+fig, ax = plt.subplots()
+for estimator in estimators:
+    viz = plot_roc_curve(estimator, X_test, y_test,
+                        name='_',
+                        alpha=0, lw=1, ax=ax)
+    interp_tpr = np.interp(mean_fpr, viz.fpr, viz.tpr)
+    interp_tpr[0] = 0.0
+    tprs.append(interp_tpr)
+    aucs.append(viz.roc_auc)
+
+ax.plot([0, 1], [0, 1], linestyle='--', lw=2, color='r',
+        label='Chance', alpha=.8)
+
+mean_tpr = np.mean(tprs, axis=0)
+mean_tpr[-1] = 1.0
+mean_auc = auc(mean_fpr, mean_tpr)
+std_auc = np.std(aucs)
+ax.plot(mean_fpr, mean_tpr, color='b',
+        label=r'Mean ROC (AUC = %0.4f)' % (mean_auc),
+        lw=2, alpha=.8)
+
+std_tpr = np.std(tprs, axis=0)
+tprs_upper = np.minimum(mean_tpr + std_tpr, 1)
+tprs_lower = np.maximum(mean_tpr - std_tpr, 0)
+ax.fill_between(mean_fpr, tprs_lower, tprs_upper, color='grey', alpha=.2,
+                label=r'$\pm$ 1 std. dev.')
+
+ax.set(xlim=[-0.05, 1.05], ylim=[-0.05, 1.05],
+    title="ROC Curve")
+ax.set_xlabel('False Positive Rate')
+ax.set_ylabel('True Positive Rate')
+ax.legend(loc="lower right")
+plt.show()

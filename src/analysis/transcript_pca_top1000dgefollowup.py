@@ -10,6 +10,8 @@ import seaborn as sns
 import os
 import sys
 import mygene
+plt.rcParams['figure.dpi'] = 300
+plt.rcParams['savefig.dpi'] = 300
 sys.path.append('..\\..\\src\\util\\')
 from helper_functions import filter_samples
 
@@ -89,7 +91,7 @@ plt.bar(range(1,len(variance)+1), variance)
 plt.xlabel('PCA Feature')
 plt.ylabel('Explained Variance')
 plt.title('Explained Variance of Top PCA Components')
-plt.savefig(path_to_save_figures + "PCA_" + name_of_PCA_run + "_explainedvariance.png")
+#plt.savefig(path_to_save_figures + "PCA_" + name_of_PCA_run + "_explainedvariance.png")
 plt.show()
 
 variance_pct = pca.explained_variance_ratio_ # list with the explained variance of each PC
@@ -98,7 +100,7 @@ plt.bar(range(1,len(variance_pct)+1), variance_pct*100)
 plt.xlabel('PCA Feature')
 plt.ylabel('Percent of Variance Explained')
 plt.title('Explained Variance of Top PCA Components')
-plt.savefig(path_to_save_figures + "PCA_" + name_of_PCA_run + "_explainedvariancepct.png")
+#plt.savefig(path_to_save_figures + "PCA_" + name_of_PCA_run + "_explainedvariancepct.png")
 plt.show()
 
 
@@ -137,7 +139,7 @@ sns.lmplot(
     legend=True
     )
 #plt.title('2D PCA Graph')
-plt.savefig(path_to_save_figures + name_of_PCA_run + "-PCA1_vs_PCA2_colorbyactivationstatus")
+#plt.savefig(path_to_save_figures + name_of_PCA_run + "-PCA1_vs_PCA2_colorbyactivationstatus")
 plt.show()
 
 
@@ -150,8 +152,10 @@ p = sns.lmplot(
     hue='allergy status', 
     fit_reg=False, 
 )
+p.set(xlabel='PC1 (33.0% Variance)', ylabel='PC2 (19.8% Variance)')
+
 p.fig.legend(loc='lower center', ncol=2, title='Allergy Status', bbox_to_anchor=(0.475, -0.1))
-plt.savefig(path_to_save_figures + name_of_PCA_run + "-PCA1_vs_PCA2_colorbyallergystatus_withlegend")
+#plt.savefig(path_to_save_figures + name_of_PCA_run + "-PCA1_vs_PCA2_colorbyallergystatus_withlegend")
 plt.show()
 
 
@@ -168,8 +172,8 @@ plt.show()
 # plt.savefig(path_to_save_figures + "PCA1_vs_PCA2_vs_PCA3_colorbyallergystatus")
 # plt.show()
 
-sns.pairplot(pca_df, hue='allergy status')
-plt.savefig(path_to_save_figures + name_of_PCA_run + "-all_PCA_comparisons_colorbyallergystatus")
+#sns.pairplot(pca_df, hue='allergy status')
+#plt.savefig(path_to_save_figures + name_of_PCA_run + "-all_PCA_comparisons_colorbyallergystatus")
 plt.show()
 
 

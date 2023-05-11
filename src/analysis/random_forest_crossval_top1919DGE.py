@@ -28,6 +28,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import os
 import sys
+plt.rcParams['figure.dpi'] = 300
+plt.rcParams['savefig.dpi'] = 300
 sys.path.append('..\\..\\src\\util\\')
 from helper_functions import filter_samples
 
@@ -126,7 +128,7 @@ print('Best hyperparameters:',  rand_search.best_params_)
 
 
 
-num_repeats = 2
+num_repeats = 10
 num_folds = 4
 
 estimators = []
@@ -195,7 +197,7 @@ mean_tpr[-1] = 1.0
 mean_auc = auc(mean_fpr, mean_tpr)
 std_auc = np.std(aucs)
 ax.plot(mean_fpr, mean_tpr, color='b',
-        label=r'Mean ROC (AUC = %0.4f)' % (mean_auc),
+        label=r'Mean ROC',
         lw=2, alpha=.8)
 
 std_tpr = np.std(tprs, axis=0)

@@ -5,25 +5,17 @@
 import pandas as pd
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score, confusion_matrix, precision_score, recall_score, ConfusionMatrixDisplay
+from sklearn.metrics import accuracy_score
 from sklearn.model_selection import RandomizedSearchCV, train_test_split
 from scipy.stats import randint
-from sklearn.tree import export_graphviz
-from IPython.display import Image
-import graphviz
-
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.pipeline import Pipeline
 from sklearn.impute import SimpleImputer
-from sklearn.model_selection import cross_val_score, cross_validate
+from sklearn.model_selection import cross_validate
 from sklearn.metrics import auc
-from sklearn.metrics import plot_roc_curve
 from sklearn.model_selection import StratifiedKFold
-
-from sklearn import datasets
-import sklearn.preprocessing
-from sklearn.decomposition import PCA
-from sklearn.metrics import RocCurveDisplay
+from sklearn.model_selection import cross_val_predict, StratifiedKFold
+from sklearn.metrics import roc_curve, auc
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os
@@ -73,7 +65,7 @@ df
 
 
 
-### SPLIT INTO TRAINING AND TEST DATA (REPLACE WITH KFOLD CROSS VAL)
+### SPLIT INTO TRAINING AND TEST DATA 
 X = df.drop('allergy_status_numerical', axis=1)
 #X = X.to_numpy()
 y = df['allergy_status_numerical']
@@ -91,7 +83,7 @@ accuracy = accuracy_score(y_test, y_pred)
 
 
 
-### HYPERPARAMETER TUNING ???
+### HYPERPARAMETER TUNING 
 param_dist = {'n_estimators': randint(50,500),
               'max_depth': randint(1,20)}
 
@@ -139,49 +131,95 @@ aucs = []
 
 #OOBs = []
 
-for i in range(0, num_repeats):
+probas = []
+y_true = []
+importance_dfs = []
 
+fprs = []
+tprs = []
+aucs2 = []
 
-    # https://wandb.ai/wandb_fc/kaggle_tutorials/reports/Using-K-Fold-Cross-Validation-To-Improve-Your-Machine-Learning-Models--VmlldzoyMTY0MjM2#the-final-word
-    my_pipeline = Pipeline(steps=[('preprocessor', SimpleImputer()),
-                                ('model', RandomForestClassifier(max_depth=rand_search.best_params_['max_depth'], 
-                                                                n_estimators=rand_search.best_params_['n_estimators']
-                                                                ))
-                                ])
+skf = StratifiedKFold(n_splits=num_folds)
 
+try:
+    X_df = X
+    y_df = y
+    X = X.to_numpy()
+    y = y.to_numpy()
+except AttributeError:
+    pass
 
-    scores = cross_validate(my_pipeline, X, y,
+feature_names = X_df.columns  # Store the feature names
+X_tests = []
+y_tests = []
+
+for i in range(num_repeats):
+    print('repeat:', i)
+    for train_index, test_index in skf.split(X, y):
+        X_train, X_test = X[train_index], X[test_index]
+        y_train, y_test = y[train_index], y[test_index]
+        X_tests.append(X_test)
+        y_tests.append(y_test)
+        print('test length', len(y_test))
+
+        my_pipeline = Pipeline(steps=[('preprocessor', SimpleImputer()),
+                                      ('model', RandomForestClassifier(max_depth=rand_search.best_params_['max_depth'],
+                                                                       n_estimators=rand_search.best_params_[
+                                                                           'n_estimators']
+                                                                       ))
+                                      ])
+
+        y_pred_proba = cross_val_predict(my_pipeline, X_test, y_test,
+                                         cv=num_folds,
+                                         method='predict_proba')[:, 1]
+
+        probas.extend(y_pred_proba)
+        y_true.extend(y_test)
+
+        scores = cross_validate(my_pipeline, X_train, y_train,
                                 cv=num_folds,
-                                scoring=['accuracy','precision','recall', 'roc_auc'],
+                                scoring=['accuracy', 'precision', 'recall', 'roc_auc'],
                                 return_estimator=True)
+        
+        estimators.extend(scores['estimator'])
+        accuracies.extend(scores['test_accuracy'])
+        precisions.extend(scores['test_precision'])
+        recalls.extend(scores['test_recall'])
+        aucs.extend(scores['test_roc_auc'])
 
-    # print("Average Accuracy:", scores['test_accuracy'].mean())
-    # print("Average Precision:", scores['test_precision'].mean())
-    # print("Average Recall:", scores['test_recall'].mean())
+        fpr, tpr, _ = roc_curve(y_test, y_pred_proba)
+        auc_score = auc(fpr, tpr)
+        fprs.append(fpr)
+        tprs.append(tpr)
+        aucs2.append(auc_score)
+
+        # Save feature importances
+        for estimator in estimators:
+            # Create a series containing feature importances from the model and feature names from the training data
+            feature_importances = pd.Series(estimator[1].feature_importances_, index=feature_names).sort_values(ascending=False)
+            importance_dfs.append(feature_importances)
+
+print("Average Accuracy:", np.mean(accuracies))
+print("Average Precision:", np.mean(precisions))
+print("Average Recall:", np.mean(recalls))
 
 
-    estimators.extend(scores['estimator'])
-    accuracies.extend(scores['test_accuracy'])
-    precisions.extend(scores['test_precision'])
-    recalls.extend(scores['test_recall'])
-    aucs.extend(scores['test_roc_auc'])
+##################
 
 
-
-print("Average Accuracy:", np.array(accuracies).mean())
-print("Average Precision:", np.array(precisions).mean())
-print("Average Recall:", np.array(recalls).mean())
-
-
+from sklearn.metrics import plot_roc_curve
 sns.set_theme(style='white')
 
-tprs = recalls
+tprs = []
+aucs = []
 mean_fpr = np.linspace(0, 1, 100)
 
-tprs=[]
+X_tests2 = np.repeat(X_tests,num_folds)
+y_tests2 = np.repeat(y_tests, num_folds)
+
 fig, ax = plt.subplots()
-for estimator in estimators:
-    viz = plot_roc_curve(estimator, X_test, y_test,
+for i, estimator in enumerate(estimators):
+    viz = plot_roc_curve(estimator, X_tests2[i], y_tests2[i],
                         name='_',
                         alpha=0, lw=1, ax=ax)
     interp_tpr = np.interp(mean_fpr, viz.fpr, viz.tpr)
@@ -197,7 +235,7 @@ mean_tpr[-1] = 1.0
 mean_auc = auc(mean_fpr, mean_tpr)
 std_auc = np.std(aucs)
 ax.plot(mean_fpr, mean_tpr, color='b',
-        label=r'Mean ROC',
+        label=r'Mean ROC (AUC = %0.4f)' % (mean_auc),
         lw=2, alpha=.8)
 
 std_tpr = np.std(tprs, axis=0)
@@ -211,19 +249,9 @@ ax.set(xlim=[-0.05, 1.05], ylim=[-0.05, 1.05],
 ax.set_xlabel('False Positive Rate')
 ax.set_ylabel('True Positive Rate')
 ax.legend(loc="lower right")
+plt.savefig('..\\..\\fig\\supp_fig\\random_forest\\RFcrossval_top1000DGE.png', dpi=600)
 plt.show()
 
-
-
-
-# get feature importances for each iteration/estimator
-### FEATURE IMPORTANCE
-importance_dfs = []
-for estimator in estimators:
-        
-    # Create a series containing feature importances from the model and feature names from the training data
-    feature_importances = pd.Series(estimator[1].feature_importances_, index=X_train.columns).sort_values(ascending=False)
-    importance_dfs.append(feature_importances)
 
 # convert the list of series to a DataFrame
 avg_importance_df = pd.concat(importance_dfs, axis=1, keys=range(len(importance_dfs)))

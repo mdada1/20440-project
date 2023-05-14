@@ -1,17 +1,9 @@
 ---
 title: "Genome-wide differential gene expression analysis on activated samples of (future) persistent vs resolved subjects at baseline timepoint"
 output: html_notebook
+editor_options: 
+  chunk_output_type: inline
 ---
-
-This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
-
-Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
-
-Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
-
-When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
-
-The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
 
 ```{r}
 # Install packages and load libraries
@@ -34,6 +26,7 @@ library(ggplot2)
 # Unzips gz file and writes over with unzipped version
 # R.utils::gunzip("/Users/Amanda Chan/Documents/440 Project/Dataset/GSE114065_raw_counts_GRCh38.p13_NCBI.tsv.gz")
 ```
+
 ```{r}
 
 
@@ -217,27 +210,50 @@ plotCounts(dds, gene="140738", intgroup="allergy_status")
 plotCounts(dds, gene="441501", intgroup="allergy_status")
 
 ```
-Volcano Plot
+Volcano Plot - pvalues (not adjusted)
 ```{r}
-#reset par
-par(mfrow=c(1,1))
-# Make a basic volcano plot
-with(res, plot(log2FoldChange, -log10(pvalue), pch=20, main="Volcano plot"))
+# #reset par
+# par(mfrow=c(1,1))
+# # Make a basic volcano plot
+# with(res, plot(log2FoldChange, -log10(pvalue), pch=20, main="Volcano plot"))
+# 
+# # Add colored points: blue if padj<0.05, red if log2FC>2 and padj<0.05)
+# with(subset(res, padj<.05 ), points(log2FoldChange, -log10(pvalue), pch=20, col="blue"))
+# with(subset(res, padj<.05 & abs(log2FoldChange)>2), points(log2FoldChange, -log10(pvalue), pch=20, col="red"))
+```
+
+
+Volcano Plot - adjusted pvalues
+```{r fig.width=7, fig.height=10}
+
+# Save as pdf
+pdf(file = "..\\..\\data\\results\\differential_gene_expression\\activ_pers_vs_resolved_baseline_genomewide_volc_plot.pdf", width = 7, height = 10)
+
+# Make volcano plot
+with(res, plot(log2FoldChange, -log10(padj), pch=20, xlim=c(-6, 6), main="Differential gene expression in future allergy persistent \n vs allergy resolved infants at baseline timepoint"))
 
 # Add colored points: blue if padj<0.05, red if log2FC>2 and padj<0.05)
-with(subset(res, padj<.05 ), points(log2FoldChange, -log10(pvalue), pch=20, col="blue"))
-with(subset(res, padj<.05 & abs(log2FoldChange)>2), points(log2FoldChange, -log10(pvalue), pch=20, col="red"))
-```
+with(subset(res, padj<.1 & abs(log2FoldChange)>1), points(log2FoldChange, -log10(padj), pch=20, col="blue"))
+with(subset(res, padj<.05 & abs(log2FoldChange)>1), points(log2FoldChange, -log10(padj), pch=20, col="red"))
 
-PCA
-```{r}
-#First we need to transform the raw count data
-#vst function will perform variance stabilizing transformation
+# Create labels for points
+points_label <- subset(res, padj<.1 & abs(log2FoldChange)>1)
 
-vsdata <- vst(dds, blind=FALSE)
-```
+# Labels for the significant genes
+labels <- c("ADAP2", "FGF9", "ANPEP", "LOC105370259")
 
-```{r}
-plotPCA(vsdata, intgroup="allergy_status") # use the DESEQ2 plotPCA fxn 
+# Label the significant genes on the volcano plot
+with(points_label[1:2,], text(log2FoldChange, -log10(padj), labels[1:2], pos=3)) 
+with(points_label[3,], text(log2FoldChange, -log10(padj), labels[3], pos=4)) 
+with(points_label[4,], text(log2FoldChange, -log10(padj), labels[4], pos=1)) 
+# pos specifies the position of the labels relative to the points
+
+
+# Add legend
+legend("topright", legend = c("padj < 0.05 and abs(log2FoldChange) > 1", "padj < 0.1 and abs(log2FoldChange) > 1"), col = c("red", "blue"), cex=0.8, pch=20)
+
+
+dev.off()
+
 
 ```

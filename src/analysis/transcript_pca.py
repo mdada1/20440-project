@@ -21,7 +21,7 @@ df = pd.read_pickle('..\\..\\data\\processed\\GSE114065_processed_RNAseq.pkl')
 annotation_df = pd.read_pickle('..\\..\\data\\processed\\GSE114065_series_matrix.pkl')
 
 df = filter_samples(df, annotation_df, 'Sample_characteristics_ch1_age_yrs', (2,4))
-#df = filter_samples(df, annotation_df, 'Sample_characteristics_ch1_activation_status', 1)
+df = filter_samples(df, annotation_df, 'Sample_characteristics_ch1_activation_status', 1)
 df
 
 #display(annotation_df)
@@ -101,23 +101,6 @@ pca_df['allergy_status_numerical'] = pca_df['allergy status'].map(target_names)
 pca_df.to_pickle("..\\..\\data\\results\\pca_df_" + name_of_PCA_run + ".pkl")
 
 
-# plot the first 2 PCs
-sns.set()
-ax = sns.lmplot(
-    x='PC1', 
-    y='PC2', 
-    data=pca_df, 
-    hue='activation status', 
-    fit_reg=False, 
-    legend=True
-    )
-ax.set(xlabel='PC1 (34.1% Variance)', ylabel='PC2 (25.3% Variance)')
-
-#plt.title('2D PCA Graph')
-#plt.savefig(path_to_save_figures + name_of_PCA_run + "-PCA1_vs_PCA2_colorbyallergystatus")
-plt.show()
-
-
 # same plot as above but with legend underneath
 sns.set()
 p = sns.lmplot(
@@ -127,9 +110,12 @@ p = sns.lmplot(
     hue='allergy status', 
     fit_reg=False, 
 )
-p.set(xlabel='PC1 (30.4% Variance)', ylabel='PC2 (20.1% Variance)')
+p.set(xlabel = f'PC1 ({variance_pct[0]:.1%} Variance)')
+p.set(ylabel = f'PC22 ({variance_pct[1]:.1%} Variance)')
+
 
 p.fig.legend(loc='lower center', ncol=2, title='Allergy Status', bbox_to_anchor=(0.475, -0.1))
+plt.savefig(path_to_save_figures + name_of_PCA_run + "-PCA1_vs_PCA2_colorbyactivationstatus_withlegend", dpi=600)
 
 
 

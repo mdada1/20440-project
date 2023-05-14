@@ -10,8 +10,8 @@ import seaborn as sns
 import os
 import sys
 import mygene
-plt.rcParams['figure.dpi'] = 300
-plt.rcParams['savefig.dpi'] = 300
+plt.rcParams['figure.dpi'] = 600
+plt.rcParams['savefig.dpi'] = 600
 sys.path.append('..\\..\\src\\util\\')
 from helper_functions import filter_samples
 
@@ -152,10 +152,12 @@ p = sns.lmplot(
     hue='allergy status', 
     fit_reg=False, 
 )
-p.set(xlabel='PC1 (33.0% Variance)', ylabel='PC2 (19.8% Variance)')
+p.set(xlabel = f'PC1 ({variance_pct[0]:.1%} Variance)')
+p.set(ylabel = f'PC22 ({variance_pct[1]:.1%} Variance)')
+
 
 p.fig.legend(loc='lower center', ncol=2, title='Allergy Status', bbox_to_anchor=(0.475, -0.1))
-#plt.savefig(path_to_save_figures + name_of_PCA_run + "-PCA1_vs_PCA2_colorbyallergystatus_withlegend")
+plt.savefig(path_to_save_figures + name_of_PCA_run + "-PCA1_vs_PCA2_colorbyallergystatus_withlegend", dpi=600)
 plt.show()
 
 

@@ -189,16 +189,16 @@ write.csv(as.data.frame(res),
 
 
 ```{r}
-#we can use plotCounts fxn to compare the normalized counts
-#between treated and control groups for the 4 differentially expressed genes
+# Use plotCounts to compare the normalized counts
+# between persistent and resolved groups for top 6 genes
 par(mfrow=c(2,3))
 
-plotCounts(dds, gene="7476", intgroup="allergy_status")
-plotCounts(dds, gene="10235", intgroup="allergy_status")
-plotCounts(dds, gene="105374981", intgroup="allergy_status")
-plotCounts(dds, gene="348", intgroup="allergy_status")
-# plotCounts(dds, gene="255928", intgroup="allergy_status")
-# plotCounts(dds, gene="222545", intgroup="allergy_status")
+plotCounts(dds, gene="7476", intgroup="allergy_status", main = "WNT7A")
+plotCounts(dds, gene="10235", intgroup="allergy_status", main = "RASGRP2")
+plotCounts(dds, gene="105374981", intgroup="allergy_status", main = "LOC105374981")
+plotCounts(dds, gene="348", intgroup="allergy_status", main = "APOE")
+plotCounts(dds, gene="255928", intgroup="allergy_status", main = "SYT14")
+plotCounts(dds, gene="222545", intgroup="allergy_status", main = "GPRC6A")
 
 ```
 Volcano Plot - adjusted pvalues

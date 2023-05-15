@@ -199,8 +199,11 @@ for i in range(num_repeats):
             importance_dfs.append(feature_importances)
 
 print("Average Accuracy:", np.mean(accuracies))
+print(np.std(accuracies, ddof=1))
 print("Average Precision:", np.mean(precisions))
+print(np.std(precisions))
 print("Average Recall:", np.mean(recalls))
+print(np.std(recalls))
 
 
 ##################

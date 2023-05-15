@@ -1,6 +1,6 @@
 # PLS-DA analysis on all RNAseq data
 # filter to only include later time point (2/4 yrs)
-# also filter to only use activated cells?
+# also filter to only use activated cells
 
 import pandas as pd
 import numpy as np
@@ -25,12 +25,20 @@ plt.rcParams['savefig.dpi'] = 300
 
 ### PLS FOR DIMENSIONALITY REDUCTION- ALL POINTS
 
-df = pd.read_pickle('..\\..\\data\\processed\\GSE114065_processed_RNAseq.pkl')
+df_raw = pd.read_pickle('..\\..\\data\\processed\\GSE114065_processed_RNAseq.pkl')
 annotation_df = pd.read_pickle('..\\..\\data\\processed\\GSE114065_series_matrix.pkl')
+top1000dge = pd.read_pickle('..\\..\\data\\results\\differential_gene_expression\\top1000from1919dge_followup.pkl')
 
-df = filter_samples(df, annotation_df, 'Sample_characteristics_ch1_age_yrs', (2,4))
-df = filter_samples(df, annotation_df, 'Sample_characteristics_ch1_activation_status', 1)
-df
+df_raw = df_raw[df_raw['Gene'].isin(top1000dge['Gene'])]
+
+df_raw = filter_samples(df_raw, annotation_df, 'Sample_characteristics_ch1_age_yrs', (2,4))
+df_raw = filter_samples(df_raw, annotation_df, 'Sample_characteristics_ch1_activation_status', 1)
+df = df_raw
+# df = df_raw.T
+# headers = df.iloc[0]
+# df  = pd.DataFrame(df.values[1:], columns=headers)
+# df.index.names = ['Sample']
+# df
 
 
 # add allergy status to the PCA dataframe
@@ -86,7 +94,7 @@ fractions_of_explained_variance = variance_in_x / np.sum(variance_in_x)
 
 
 path_to_save_figures = '..\\..\\fig\\supp_fig\\PLS\\' # for github
-name_of_run = 'PLS_allgenes_activatedonly' 
+name_of_run = 'PLS_top1000dge_activatedonly' 
 
 sns.set()
 plt.figure(figsize=(8, 10))

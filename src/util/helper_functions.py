@@ -2,13 +2,6 @@ import pandas as pd
 
 #get sample IDs (columns in data df) matching a certain characteristic
 def filter_samples(data, annotations, characteristic_name, desired_values):
-    #df = df[df['Gene'].isin(gene_subset['transcript ID'])]
-
-    #filtered_samples = annotations.columns[annotations.iloc[0] == desired_values]
-
-    #filtered_samples = annotations.columns[annotations.loc[annotations['Sample_title'] == characteristic_name].iloc[0, 1:] == desired_values]
-
-    #subset_df = data[filtered_samples]
     try:
         subset_df_list = []
         for desired_value in desired_values:
@@ -28,8 +21,6 @@ def filter_samples(data, annotations, characteristic_name, desired_values):
     subset_df.insert(loc=0, column='Gene', value=data['Gene'])
     print(subset_df)
     return subset_df
-
-
 
 
 

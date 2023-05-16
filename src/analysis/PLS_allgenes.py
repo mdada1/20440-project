@@ -1,6 +1,6 @@
 # PLS-DA analysis on all RNAseq data
 # filter to only include later time point (2/4 yrs)
-# also filter to only use activated cells?
+# also filter to only use activated cells
 
 import pandas as pd
 import numpy as np
@@ -44,8 +44,8 @@ activation_status_df = annotation_df.loc[annotation_df['Sample_title'] == 'Sampl
 activation_status_df = activation_status_df.reindex(columns = annotation_df_samples_to_keep)
  
 label_df = pd.DataFrame()
-label_df['allergy status'] = allergy_status_df.values[0] #check the order of the labels
-label_df['activation status'] = activation_status_df.values[0] #check the order of the labels
+label_df['allergy status'] = allergy_status_df.values[0]
+label_df['activation status'] = activation_status_df.values[0]
 
 target_names = {
     'control':2,
@@ -74,7 +74,6 @@ y = label_df['allergy_status_numerical'].to_numpy()
 plsr = PLSRegression(n_components=2, scale=False) 
 plsr.fit(x_scaled, y) 
 
-
 plsr_df = pd.DataFrame(plsr.x_scores_)
 plsr_df.index=label_df['allergy status']
 plsr_df.columns = ['Latent Variable 1', 'Latent Variable 2']
@@ -83,7 +82,6 @@ plsr_df = plsr_df.reset_index()
 # get variance explained
 variance_in_x = np.var(plsr.x_scores_, axis = 0) 
 fractions_of_explained_variance = variance_in_x / np.sum(variance_in_x)
-
 
 path_to_save_figures = '..\\..\\fig\\supp_fig\\PLS\\' # for github
 name_of_run = 'PLS_allgenes_activatedonly' 
@@ -99,7 +97,6 @@ ax = sns.lmplot(
     #legend=True
     )
 ax.fig.legend(loc='lower center', ncol=2, title='Allergy Status', bbox_to_anchor=(0.475, -0.1))
-#p.set(xlabel='LV1 (30.4% Variance)', ylabel='LV2 (20.1% Variance)')
 ax.set(xlabel=f'LV1 ({fractions_of_explained_variance[0]:.1%} Variance)'
                     , ylabel=f'LV2 ({fractions_of_explained_variance[1]:.1%} Variance)')
 
@@ -162,10 +159,6 @@ plt.show()
 
 
 
-
-
-
-
 ### PERFORM CLASSIFICATION AND CROSS-VALIDATION 
 
 
@@ -178,7 +171,6 @@ def pls_da(X_train, y_train, X_test):
     pred = (plsr.predict(X_test)[:,0] > 0.5).astype('uint8')
    # print(y_pred, pred)
     return pred, y_pred
-
 
 
 # determine best number of folds

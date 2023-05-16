@@ -9,7 +9,7 @@ import seaborn as sns
 import os
 
 path_to_save_figures = '..\\..\\fig\\supp_fig\\tSNE\\' # for github
-name_of_run = 'tSNE_pca_activatedonly_allcomponents' #_activatedonly'
+name_of_run = 'tSNE_pca_activatedonly_allcomponents'
 
 
 # import df containing all principal components (generated in transcript_pca.py)

@@ -1,6 +1,6 @@
 # PCA analysis on RNAseq data- using only top 1000 most sig. genes from DGE- activated persistant vs resolved genome wide at followup 
 # filter to only include later time point (2/4 yrs)
-# also filter to only use activated cells?
+# also filter to only use activated cells
 import pandas as pd
 from sklearn import datasets
 import sklearn.preprocessing
@@ -31,11 +31,10 @@ conversion_table = pd.read_csv('..\\..\\data\\results\\differential_gene_express
 
 # get the top differentially expressed genes
 dge_df = pd.read_csv('..\\..\\data\\results\\differential_gene_expression\\activ_pers_vs_resolved_followup_genomewide_gene_symb.csv')
-mask = dge_df['SYMBOL'].notnull() # NOTE: there were 50 differentially expressed genes in the top 1000 that don't have gene IDs- ignoring those
-dge_df = dge_df[mask].head(3000)
+mask = dge_df['SYMBOL'].notnull()
 dge_df
 
-# convert gene symbols in dge_df to ensembl IDs and take the top 1000
+# convert gene symbols in dge_df to ensembl IDs
 dge_df.insert(loc=1, column='external_gene_name', value=dge_df['SYMBOL'])
 conversion_table.drop_duplicates(subset='ensembl_gene_id', keep='first', inplace=True)
 merged_df = pd.merge(dge_df, conversion_table, on='external_gene_name')
@@ -53,14 +52,12 @@ df
 # prepare feature data
 df = df.drop('Gene', axis=1)
 X = df.to_numpy() 
-X = X.transpose() # X is an ndarray of just features (50 or 26 samples x 18864 genes)
+X = X.transpose() # X is an ndarray of just features (50 or 26 samples x 1000 genes)
 X.shape
-
 
 # data scaling
 x_scaled = sklearn.preprocessing.StandardScaler().fit_transform(X)
 print(x_scaled)
-
 
 
 # run PCA
@@ -78,11 +75,9 @@ pca_df = pd.DataFrame(
 
 pca_df.head()
 
-path_to_save_figures = '..\\..\\fig\\supp_fig\\PCA\\our_analysis-transcriptPCA\\top1000_dge_of1000\\' # for github
-name_of_PCA_run = 'activatedonly_top1000DGE_allcomponents' #_activatedonly'
+path_to_save_figures = '..\\..\\fig\\supp_fig\\PCA\\our_analysis-transcriptPCA\\top1000_dge_of1000\\'
+name_of_PCA_run = 'activatedonly_top1000DGE_allcomponents'
 
-
-print(path_to_save_figures + "PCA_" + name_of_PCA_run + "_explainedvariance")
 
 # plot explained variance of each PC
 variance = pca.explained_variance_ # list with the explained variance of each PC

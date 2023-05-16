@@ -8,8 +8,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import os
 
-path_to_save_figures = '..\\..\\fig\\supp_fig\\tSNE\\' # for github
-name_of_run = 'activatedonly_top1000DGE_allcomponents' #_activatedonly'
+path_to_save_figures = '..\\..\\fig\\supp_fig\\tSNE\\'
+name_of_run = 'activatedonly_top1000DGE_allcomponents'
 
 
 # import df containing all principal components (generated in transcript_pca.py)

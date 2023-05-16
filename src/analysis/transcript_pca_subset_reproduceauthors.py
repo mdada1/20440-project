@@ -1,7 +1,6 @@
 # PCA analysis on a subset of the RNAseq data
 # as of 4/5, are using the 4154 genes identified by the authors
 
-
 import pandas as pd
 from sklearn import datasets
 import sklearn.preprocessing

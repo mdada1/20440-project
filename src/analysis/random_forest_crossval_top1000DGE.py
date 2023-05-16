@@ -15,6 +15,7 @@ from sklearn.model_selection import cross_validate
 from sklearn.metrics import auc
 from sklearn.model_selection import StratifiedKFold
 from sklearn.model_selection import cross_val_predict, StratifiedKFold
+from sklearn.metrics import plot_roc_curve
 from sklearn.metrics import roc_curve, auc
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -51,8 +52,8 @@ allergy_status_df = allergy_status_df.drop('Gene', axis=1)
 # activation_status_df = annotation_df.loc[annotation_df['Sample_title'] == 'Sample_characteristics_ch1_activation_status']
 # activation_status_df = activation_status_df.reindex(columns = annotation_df_samples_to_keep)
  
-df['allergy status'] = allergy_status_df.values[0] #check the order of the labels
-#df['activation status'] = activation_status_df.values[0] #check the order of the labels
+df['allergy status'] = allergy_status_df.values[0]
+#df['activation status'] = activation_status_df.values[0]
 
 target_names = {
     'control':2,
@@ -82,7 +83,6 @@ accuracy = accuracy_score(y_test, y_pred)
 #print("Accuracy:", accuracy)
 
 
-
 ### HYPERPARAMETER TUNING 
 param_dist = {'n_estimators': randint(50,500),
               'max_depth': randint(1,20)}
@@ -106,18 +106,7 @@ best_rf = rand_search.best_estimator_
 print('Best hyperparameters:',  rand_search.best_params_)
 
 
-
 ### REDO MODEL WITH BEST HYPERPARAMETERS- K FOLD CROSS VALIDATION
-
-
-# # Run classifier with cross-validation and plot ROC curves
-# cv = StratifiedKFold(n_splits=4)
-
-# classifier = RandomForestClassifier(max_depth=rand_search.best_params_['max_depth'], 
-#                                     n_estimators=rand_search.best_params_['n_estimators'])
-
-
-
 
 
 num_repeats = 10
@@ -128,8 +117,6 @@ accuracies = []
 precisions = []
 recalls = []
 aucs = []
-
-#OOBs = []
 
 probas = []
 y_true = []
@@ -210,7 +197,6 @@ print(np.std(recalls))
 ##################
 
 
-from sklearn.metrics import plot_roc_curve
 sns.set_theme(style='white')
 
 tprs = []

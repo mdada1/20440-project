@@ -1,8 +1,6 @@
 import pandas as pd
 import gzip
 
-# run from main project directory for now
-
 # read in RNAseq data and save to a dataframe
 RNAseq_df = pd.read_csv('.\\data\\raw\\GSE114065_processed_RNAseq.txt.gz', sep='\t', header=0) # for github
 # RNAseq_df = pd.read_csv('/content/GSE114065_processed_RNAseq.txt.gz', sep='\t', header=0) # for google colab

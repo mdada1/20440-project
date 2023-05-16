@@ -1,6 +1,6 @@
 # PCA analysis on all RNAseq data
 # filter to only include later time point (2/4 yrs)
-# also filter to only use activated cells- do both ways and pick result later
+# also filter to only use activated cells
 
 import pandas as pd
 from sklearn import datasets
@@ -37,7 +37,6 @@ x_scaled = sklearn.preprocessing.StandardScaler().fit_transform(X)
 print(x_scaled)
 
 
-
 # run PCA
 pca = PCA(n_components=0.99999999999999) # n_components is the number of top components to keep, or if <1 is the percent of variance we want explained
 pca_features = pca.fit_transform(x_scaled)
@@ -51,8 +50,8 @@ pca_df = pd.DataFrame(
 
 pca_df.head()
 
-path_to_save_figures = '..\\..\\fig\\supp_fig\\PCA\\our_analysis-transcriptPCA\\' # for github
-name_of_PCA_run = 'activatedonly_allcomponents_saveactstatus' #_activatedonly'
+path_to_save_figures = '..\\..\\fig\\supp_fig\\PCA\\our_analysis-transcriptPCA\\'
+name_of_PCA_run = 'activatedonly_allcomponents_saveactstatus'
 
 
 print(path_to_save_figures + "PCA_" + name_of_PCA_run + "_explainedvariance")

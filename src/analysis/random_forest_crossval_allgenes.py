@@ -15,6 +15,7 @@ from sklearn.model_selection import cross_validate
 from sklearn.metrics import auc
 from sklearn.model_selection import StratifiedKFold
 from sklearn.model_selection import cross_val_predict, StratifiedKFold
+from sklearn.metrics import plot_roc_curve
 from sklearn.metrics import roc_curve, auc
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -38,7 +39,6 @@ df.index.names = ['Sample']
 df
 
 
-
 # add allergy status to the dataframe
 annotation_df_samples_to_keep = df_raw.columns
 allergy_status_df = annotation_df.loc[annotation_df['Sample_title'] == 'Sample_characteristics_ch1_allergy_status']
@@ -50,8 +50,8 @@ allergy_status_df = allergy_status_df.drop('Gene', axis=1)
 # activation_status_df = annotation_df.loc[annotation_df['Sample_title'] == 'Sample_characteristics_ch1_activation_status']
 # activation_status_df = activation_status_df.reindex(columns = annotation_df_samples_to_keep)
  
-df['allergy status'] = allergy_status_df.values[0] #check the order of the labels
-#df['activation status'] = activation_status_df.values[0] #check the order of the labels
+df['allergy status'] = allergy_status_df.values[0]
+#df['activation status'] = activation_status_df.values[0]
 
 target_names = {
     'control':2,
@@ -109,16 +109,6 @@ print('Best hyperparameters:',  rand_search.best_params_)
 ### REDO MODEL WITH BEST HYPERPARAMETERS- K FOLD CROSS VALIDATION
 
 
-# # Run classifier with cross-validation and plot ROC curves
-# cv = StratifiedKFold(n_splits=4)
-
-# classifier = RandomForestClassifier(max_depth=rand_search.best_params_['max_depth'], 
-#                                     n_estimators=rand_search.best_params_['n_estimators'])
-
-
-
-
-
 num_repeats = 10
 num_folds = 4
 
@@ -127,8 +117,6 @@ accuracies = []
 precisions = []
 recalls = []
 aucs = []
-
-#OOBs = []
 
 probas = []
 y_true = []
@@ -208,8 +196,6 @@ print(np.std(recalls))
 
 ##################
 
-# old way
-from sklearn.metrics import plot_roc_curve
 sns.set_theme(style='white')
 
 tprs = []
@@ -254,10 +240,7 @@ ax.legend(loc="lower right")
 plt.savefig('..\\..\\fig\\supp_fig\\random_forest\\RFcrossval_allgenes.png', dpi=600)
 plt.show()
 
-
-
 #################
-
 
 # convert the list of series to a DataFrame
 avg_importance_df = pd.concat(importance_dfs, axis=1, keys=range(len(importance_dfs)))

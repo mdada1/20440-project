@@ -13,14 +13,14 @@ from helper_functions import filter_samples
 plt.rcParams['figure.dpi'] = 300
 plt.rcParams['savefig.dpi'] = 300
 
-path_to_save_figures = '..\\..\\fig\\supp_fig\\tSNE\\' # for github
-name_of_run = 'tSNE_allgenes_activatedonly' #_activatedonly'
+path_to_save_figures = '..\\..\\fig\\supp_fig\\tSNE\\'
+name_of_run = 'tSNE_allgenes_activatedonly' 
 
 df = pd.read_pickle('..\\..\\data\\processed\\GSE114065_processed_RNAseq.pkl')
 annotation_df = pd.read_pickle('..\\..\\data\\processed\\GSE114065_series_matrix.pkl')
 
 df = filter_samples(df, annotation_df, 'Sample_characteristics_ch1_age_yrs', (2,4))
-#df = filter_samples(df, annotation_df, 'Sample_characteristics_ch1_activation_status', 1)
+df = filter_samples(df, annotation_df, 'Sample_characteristics_ch1_activation_status', 1)
 df
 
 #display(annotation_df)
@@ -54,8 +54,8 @@ annotation_df_samples_to_keep = df.columns
 activation_status_df = annotation_df.loc[annotation_df['Sample_title'] == 'Sample_characteristics_ch1_activation_status']
 activation_status_df = activation_status_df.reindex(columns = annotation_df_samples_to_keep)
  
-tsne_df['allergy status'] = allergy_status_df.values[0] #check the order of the labels
-tsne_df['activation status'] = activation_status_df.values[0] #check the order of the labels
+tsne_df['allergy status'] = allergy_status_df.values[0]
+tsne_df['activation status'] = activation_status_df.values[0]
 
 target_names = {
     'control':0,
@@ -63,7 +63,6 @@ target_names = {
     'resolved':2
 }
 tsne_df['allergy_status_numerical'] = tsne_df['allergy status'].map(target_names)
-
 
 tsne_df.to_pickle('..\\..\\data\\results\\' + name_of_run + '.pkl')
 

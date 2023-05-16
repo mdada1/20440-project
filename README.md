@@ -29,9 +29,12 @@ project
 │   ├───main_fig
 │   ├───supp_fig
 │   └───tables
+├───gsea
+│   └───gene_sets
 └───src
     ├───analysis
     ├───data_processing
+    ├───r_code
     ├───util
     └───visualization
 ```
@@ -44,8 +47,10 @@ The purpose of each folder is as follows:
 * **fig/main_fig/**: our main figures
 * **fig/supp_fig/**: our supplementary figures
 * **fig/tables/**: our tables
+* **gsea/gene_sets/**: gene sets used during GSEA
 * **src/analysis/**: code for producing results
 * **src/data_processing/**: code for loading and cleaning the authors' data
+* **src/data_processing/**: code performed in RStudio
 * **src/util/**: helper functions and resused scripts
 * **src/visualization/**: code for plotting results
 

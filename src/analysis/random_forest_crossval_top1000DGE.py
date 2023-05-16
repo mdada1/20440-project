@@ -28,7 +28,7 @@ from helper_functions import filter_samples
 ### READ IN AND PROCESS DATA
 df_raw = pd.read_pickle('..\\..\\data\\processed\\GSE114065_processed_RNAseq.pkl')
 annotation_df = pd.read_pickle('..\\..\\data\\processed\\GSE114065_series_matrix.pkl')
-top1000dge = pd.read_pickle('..\\..\\data\\results\\differential_gene_expression\\top1000from1919dge_followup.pkl')
+top1000dge = pd.read_pickle('..\\..\\data\\results\\differential_gene_expression\\top1000from1000dge_followup.pkl')
 
 df_raw = df_raw[df_raw['Gene'].isin(top1000dge['Gene'])]
 
@@ -263,7 +263,7 @@ avg_importance_df = pd.concat(importance_dfs, axis=1, keys=range(len(importance_
 avg_importance_df = avg_importance_df.mean(axis=1)
 avg_importance_df = avg_importance_df.sort_values(ascending=False)
 
-pd.to_pickle(avg_importance_df, '..\\..\\data\\results\\avgfeatureimportance_RFtop1919DGE_4folds10repeats.pkl')
+pd.to_pickle(avg_importance_df, '..\\..\\data\\results\\avgfeatureimportance_RFtop1000DGE_4folds10repeats.pkl')
 
 # Plot a simple bar chart
 avg_importance_df.head(100).plot.bar()

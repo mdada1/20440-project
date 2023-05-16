@@ -9,11 +9,11 @@ import seaborn as sns
 import os
 
 path_to_save_figures = '..\\..\\fig\\supp_fig\\tSNE\\' # for github
-name_of_run = 'activatedonly_top1919DGE_allcomponents' #_activatedonly'
+name_of_run = 'activatedonly_top1000DGE_allcomponents' #_activatedonly'
 
 
 # import df containing all principal components (generated in transcript_pca.py)
-pca_df = pd.read_pickle('..\\..\\data\\results\\pca_df_activatedonly_top1919DGE_allcomponents.pkl')
+pca_df = pd.read_pickle('..\\..\\data\\results\\pca_df_activatedonly_top1000DGE_allcomponents.pkl')
 pca_df.head(100)
 
 # run tSNE on the PCs

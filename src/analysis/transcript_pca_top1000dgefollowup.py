@@ -39,14 +39,14 @@ dge_df
 dge_df.insert(loc=1, column='external_gene_name', value=dge_df['SYMBOL'])
 conversion_table.drop_duplicates(subset='ensembl_gene_id', keep='first', inplace=True)
 merged_df = pd.merge(dge_df, conversion_table, on='external_gene_name')
-merged_df = merged_df.head(1919)
+merged_df = merged_df.head(1000)
 
 
 # filter the RNAseq data to only include the top 1000 differentially expressed genes
 df = df[df['Gene'].isin(merged_df['ensembl_gene_id'])]
 df
 
-#df.to_pickle('..\\..\\data\\results\\differential_gene_expression\\top1000from1919dge_followup.pkl')
+#df.to_pickle('..\\..\\data\\results\\differential_gene_expression\\top1000from1000dge_followup.pkl')
 
 
 #display(annotation_df)
@@ -68,7 +68,7 @@ pca = PCA(n_components=0.9999999999) # n_components is the number of top compone
 pca_features = pca.fit_transform(x_scaled)
 print('Shape before PCA: ', x_scaled.shape)
 print('Shape after PCA: ', pca_features.shape)
-# for top 1000 (really 1919), makes 49 PCs. takes 20 to explain 90% and 9 to explain 80%
+# for top 1000, makes 49 PCs. takes 20 to explain 90% and 9 to explain 80%
 
  
 pca_df = pd.DataFrame(
@@ -78,8 +78,8 @@ pca_df = pd.DataFrame(
 
 pca_df.head()
 
-path_to_save_figures = '..\\..\\fig\\supp_fig\\PCA\\our_analysis-transcriptPCA\\top1000_dge_of1919\\' # for github
-name_of_PCA_run = 'activatedonly_top1919DGE_allcomponents' #_activatedonly'
+path_to_save_figures = '..\\..\\fig\\supp_fig\\PCA\\our_analysis-transcriptPCA\\top1000_dge_of1000\\' # for github
+name_of_PCA_run = 'activatedonly_top1000DGE_allcomponents' #_activatedonly'
 
 
 print(path_to_save_figures + "PCA_" + name_of_PCA_run + "_explainedvariance")

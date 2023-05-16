@@ -27,7 +27,7 @@ plt.rcParams['savefig.dpi'] = 300
 
 df_raw = pd.read_pickle('..\\..\\data\\processed\\GSE114065_processed_RNAseq.pkl')
 annotation_df = pd.read_pickle('..\\..\\data\\processed\\GSE114065_series_matrix.pkl')
-top1000dge = pd.read_pickle('..\\..\\data\\results\\differential_gene_expression\\top1000from1919dge_followup.pkl')
+top1000dge = pd.read_pickle('..\\..\\data\\results\\differential_gene_expression\\top1000from1000dge_followup.pkl')
 
 df_raw = df_raw[df_raw['Gene'].isin(top1000dge['Gene'])]
 

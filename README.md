@@ -1,11 +1,9 @@
 ### Overview
 
-This project analyzes the RNA sequencing and DNA methylation data produced by David Martino et al.<sup>1</sup> Our objective is to use data analysis methods and machine learning to identify gene signatures associated with egg allergy and predict the resolution of egg allergy in children.
-
+This project analyzes the RNA sequencing and DNA methylation data produced by David Martino et al.<sup>1</sup> Our objective is to use data analysis and machine learning methods to identify gene signatures associated with egg allergy and predict the resolution of egg allergy in children.
 
 
 <sup>1</sup> Martino, D. et al. (2018). Epigenetic dysregulation of naive CD4+ T-cell activation genes in childhood food allergy. Nature communications, 9(1), 3308. https://doi.org/10.1038/s41467-018-05608-4
-
 
 
 ### Data
@@ -66,16 +64,3 @@ Then navigate to the project directory and run:
 ```
 pip install -r requirements.txt
 ```
-
-
-
-### Running code
-
-To create Table 1, navigate to the main project directory and run:
-
-```
-python .\src\data_processing\process_raw_data.py
-python .\src\visualization\generate_table1.py
-```
-
-The file "Table1.png" will be generated in the directory "figs/main_figs". This table shows an overview of the patients the dataset was derived from.

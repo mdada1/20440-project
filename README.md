@@ -1,6 +1,6 @@
 ### Overview
 
-This project analyzes the RNA sequencing and DNA methylation data produced by David Martino et al.<sup>1</sup> Our objective is to use machine learning to predict the resolution of food allergies in infants.
+This project analyzes the RNA sequencing and DNA methylation data produced by David Martino et al.<sup>1</sup> Our objective is to use data analysis methods and machine learning to identify gene signatures associated with egg allergy and predict the resolution of egg allergy in children.
 
 
 

@@ -50,7 +50,7 @@ The purpose of each folder is as follows:
 * **gsea/gene_sets/**: gene sets used during GSEA
 * **src/analysis/**: code for producing results
 * **src/data_processing/**: code for loading and cleaning the authors' data
-* **src/data_processing/**: code performed in RStudio
+* **src/r_code/**: code performed in RStudio
 * **src/util/**: helper functions and resused scripts
 * **src/visualization/**: code for plotting results
 

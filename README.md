@@ -29,8 +29,8 @@ project
 │   └───results
 ├───fig
 │   ├───main_fig
-│   └───supp_fig
-├───notebook
+│   ├───supp_fig
+│   └───tables
 └───src
     ├───analysis
     ├───data_processing
@@ -45,7 +45,7 @@ The purpose of each folder is as follows:
 * **data/results/**: our results
 * **fig/main_fig/**: our main figures
 * **fig/supp_fig/**: our supplementary figures
-* **notebook/**: Jupyter notebooks containing exploratory data analysis
+* * **fig/supp_fig/**: our tables
 * **src/analysis/**: code for producing results
 * **src/data_processing/**: code for loading and cleaning the authors' data
 * **src/util/**: helper functions and resused scripts

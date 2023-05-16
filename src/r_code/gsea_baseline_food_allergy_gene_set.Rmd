@@ -4,51 +4,29 @@ output: html_document
 date: "2023-04-30"
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
-```
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
-
-
-
-
-CODE START
-
 ```{r}
 library(tidyverse)
 ```
 
 
 ```{r}
+# Read in dge results
 res <- read_csv("..\\..\\data\\results\\differential_gene_expression\\activ_pers_vs_resolved_baseline_genomewide.csv")
+res
+```
+
+```{r}
+# Name GeneID column
+colnames(res)[1] <- "GeneID"
 res
 ```
 
 
 ```{r}
-if (!require("BiocManager", quietly = TRUE))
-    install.packages("BiocManager")
-
-BiocManager::install("org.Hs.eg.db")
+# if (!require("BiocManager", quietly = TRUE))
+#     install.packages("BiocManager")
+# 
+# BiocManager::install("org.Hs.eg.db")
 ```
 
 
@@ -91,14 +69,15 @@ res_simp
 
 Fast gsea package
 ```{r}
-# Install fgsea package
-if (!require("BiocManager", quietly = TRUE))
-    install.packages("BiocManager")
-
-BiocManager::install("fgsea")
+# # Install fgsea package
+# if (!require("BiocManager", quietly = TRUE))
+#     install.packages("BiocManager")
+# 
+# BiocManager::install("fgsea")
 
 library(fgsea)
 ```
+
 ```{r}
 # Create named vector of gene-level statistics
 ranks <- deframe(res_simp)
@@ -118,10 +97,17 @@ pathways.food_allergy %>%
   lapply(head)
 ```
 
-Run the fgsea algorithm with 1000 permutations
+Run the fgsea algorithm
 ```{r}
-fgseaRes <- fgsea(pathways=pathways.food_allergy, stats=ranks, nperm=1000)
+# fgseaSimple
+# fgseaRes <- fgsea(pathways=pathways.food_allergy, stats=ranks, nperm=1000)
 ```
+
+```{r}
+# fgseaMultilevel (recommended)
+fgseaRes <- fgsea(pathways=pathways.food_allergy, stats=ranks)
+```
+
 
 ```{r}
 fgseaResTidy <- fgseaRes %>%
